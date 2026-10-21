@@ -1,5 +1,5 @@
 // เป้าติดมือ — service worker
-const CACHE = 'paotidmue-v1.1.0';
+const CACHE = 'paotidmue-v1.2.0';
 const ASSETS = [
   './', './index.html', './manifest.webmanifest',
   './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'
