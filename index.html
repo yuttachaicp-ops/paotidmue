@@ -81,8 +81,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 .date span{font-size:.78rem;color:var(--ink-soft)}
 .iconbtn{width:42px;height:42px;border-radius:50%;border:0;background:var(--surface-2);display:grid;place-items:center;position:relative;font-size:1.02rem}
 .iconbtn .dot{position:absolute;top:7px;right:8px;width:9px;height:9px;border-radius:50%;background:var(--go);border:2px solid var(--surface)}
-.tabs{display:flex;gap:2px;margin-top:10px}
-.tabs button{flex:1;background:none;border:0;border-bottom:2px solid transparent;padding:9px 2px 10px;font-size:.84rem;color:var(--ink-soft);font-weight:500}
+.tabs{display:flex;gap:2px;margin-top:10px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:1 0 auto;background:none;border:0;border-bottom:2px solid transparent;padding:9px 7px 10px;font-size:.8rem;color:var(--ink-soft);font-weight:500;white-space:nowrap}
 .tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--go);font-weight:600}
 
 .sec{margin-top:24px}
@@ -100,6 +101,19 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tiny{font-size:.74rem}
 .num{font-variant-numeric:tabular-nums}
 
+.exdays{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.exdays::-webkit-scrollbar{display:none}
+.exdays button{flex:1 0 auto;min-width:52px;background:var(--surface-2);border:0;border-radius:99px;padding:8px 13px;font-size:.82rem;color:var(--ink-soft);font-weight:500;white-space:nowrap}
+.exdays button[aria-pressed="true"]{background:var(--go);color:var(--on-go);font-weight:600}
+.exdays button.now::after{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:currentColor;margin-left:6px;vertical-align:middle;opacity:.7}
+.exrow{display:flex;gap:11px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.exrow:first-child{border-top:0;padding-top:0}
+.exrow .bd{flex:1;min-width:0;font-size:.88rem;line-height:1.5}
+.exrow.on .bd{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:var(--line)}
+.exbox{width:26px;height:26px;border-radius:9px;border:2px solid var(--line);background:transparent;flex:none;display:grid;place-items:center;margin-top:1px;transition:.15s}
+.exbox svg{width:13px;height:13px;opacity:0;transform:scale(.6);transition:.15s;stroke:var(--on-go)}
+.exrow.on .exbox{background:var(--go);border-color:var(--go)}
+.exrow.on .exbox svg{opacity:1;transform:scale(1)}
 .empty{text-align:center;padding:38px 22px 34px;background:var(--soft);border-color:transparent}
 .empty svg.sprout{width:92px;height:76px;display:block;margin:0 auto}
 .empty .big-ico{font-size:1.9rem;opacity:.5}
@@ -222,6 +236,7 @@ button{font:inherit;color:inherit;cursor:pointer}
     <nav class="tabs" role="tablist">
       <button role="tab" aria-selected="true" data-tab="today">วันนี้</button>
       <button role="tab" aria-selected="false" data-tab="goals">เป้าหมาย</button>
+      <button role="tab" aria-selected="false" data-tab="ex">ตารางฝึก</button>
       <button role="tab" aria-selected="false" data-tab="stats">สรุป</button>
       <button role="tab" aria-selected="false" data-tab="idea">แนวคิด</button>
     </nav>
@@ -237,6 +252,22 @@ button{font:inherit;color:inherit;cursor:pointer}
       <div class="sec-h"><h2>พักไว้ก่อน</h2></div>
       <div class="stack" id="pausedList"></div>
     </div>
+  </section>
+
+  <section id="p-ex" hidden>
+    <div class="sec">
+      <nav class="exdays" id="exDays"></nav>
+      <div class="stack" id="exBody" style="margin-top:12px"></div>
+    </div>
+    <div class="sec"><div class="card">
+      <span class="chip c-habit">กติกาความปลอดภัย</span>
+      <ul style="margin:10px 0 0;padding-left:17px;display:flex;flex-direction:column;gap:5px">
+        <li class="tiny muted">วอร์มอัป 5 นาทีก่อน และคูลดาวน์ยืดเหยียดหลังเสมอ</li>
+        <li class="tiny muted">เริ่มจากจำนวนครั้งน้อยได้ เพิ่มทีละนิดเมื่อทำแล้วไม่เจ็บ</li>
+        <li class="tiny muted">หยุดทันทีถ้าเจ็บหน้าอก หน้ามืด หรือหายใจลำบากผิดปกติ</li>
+        <li class="tiny muted">คืนไหนนอนไม่พอ ให้ลดความหนักหรือเลื่อนออกไป ดีกว่าฝืนจนบาดเจ็บ</li>
+      </ul>
+    </div></div>
   </section>
 
   <section id="p-stats" hidden>
@@ -351,6 +382,40 @@ function streak(g){let n=0;for(let i=0;i<400;i++){const k=key(dayAgo(i));
 const pct=g=>g.target?Math.min(100,(g.val||0)/g.target*100):0;
 function daysLeft(g){if(!g.deadline)return null;const d=new Date(g.deadline+'T23:59:59');
   return Math.ceil((d-new Date())/86400000)}
+
+/* ---------- ตารางฝึก 7 วัน ---------- */
+const EX=[
+ {d:'จันทร์',n:'ฝึกแรงต้านทั้งตัว',k:'c-habit',l:['วิดพื้น 3 เซต × 6–12 ครั้ง (พิงโต๊ะหรือกำแพงได้ถ้ายังไม่ไหว)','Squat 3 เซต × 12–15 ครั้ง','Glute bridge 3 เซต × 12–15 ครั้ง','Crunch 2 เซต × 10–15 ครั้ง','Plank 2 เซต × 20–30 วินาที','พักระหว่างเซต 60–120 วินาที']},
+ {d:'อังคาร',n:'เดินเร็วหรือวิ่งเบา',k:'c-count',l:['20–30 นาที ที่ความหนักพอพูดเป็นประโยคได้','ถ้าเพิ่งเริ่ม สลับเดินเร็ว 3 นาที วิ่งเบา 1 นาที','ยืดเหยียดท้ายคาบ 5 นาที']},
+ {d:'พุธ',n:'ฝึกแรงต้านทั้งตัว',k:'c-habit',l:['ทำชุดเดียวกับวันจันทร์','ปรับจำนวนครั้งตามกำลัง ไม่ต้องฝืนจนเสียท่า','พักระหว่างเซต 60–120 วินาที']},
+ {d:'พฤหัสฯ',n:'คาร์ดิโอเบา',k:'c-count',l:['เดินเร็ว 20–30 นาที','ยืดเหยียดเพิ่ม 5 นาที โดยเฉพาะต้นขาและสะโพก']},
+ {d:'ศุกร์',n:'ฝึกแรงต้านทั้งตัว',k:'c-habit',l:['ทำชุดเดียวกับวันจันทร์','ทำครบได้สบายติดกัน 2 สัปดาห์ ค่อยเพิ่มครั้งหรือเพิ่มความยาก','เน้นท่าถูกต้องมากกว่าจำนวน']},
+ {d:'เสาร์',n:'เดินหรือวิ่งตามกำลัง',k:'c-count',l:['20–40 นาที แบบสบาย ๆ','ถ้าปวดล้าจากเมื่อวาน เปลี่ยนเป็นเดินเฉย ๆ ได้']},
+ {d:'อาทิตย์',n:'พักฟื้น',k:'c-year',l:['พักเต็มวัน หรือเดินเล่นเบา ๆ','เตรียมวัตถุดิบสำหรับสัปดาห์หน้า','กล้ามโตตอนพัก ไม่ใช่ตอนฝึก']}
+];
+const dowIdx=()=>(new Date().getDay()+6)%7;
+let exSel=dowIdx();
+function exDayKey(i){const t=new Date();t.setDate(t.getDate()-(dowIdx()-i));return key(t)}
+const exOn=(i,j)=>!!dayLog(exDayKey(i))['x'+j];
+function renderEx(){
+  $('#exDays').innerHTML=EX.map((e,i)=>`<button data-exday="${i}" aria-pressed="${i===exSel}" class="${i===dowIdx()?'now':''}">${e.d}</button>`).join('');
+  const e=EX[exSel],k=exDayKey(exSel),done=e.l.filter((_,j)=>exOn(exSel,j)).length;
+  let week=0;EX.forEach((x,i)=>{if(x.l.some((_,j)=>exOn(i,j)))week++});
+  $('#exBody').innerHTML=`<article class="card">
+      <span class="chip ${e.k}">${esc(e.n)}</span>
+      <h3 style="margin-top:7px;font-size:1.05rem">วัน${esc(e.d)}</h3>
+      <div class="tiny muted" style="margin-top:3px">ทำแล้ว ${done}/${e.l.length} ข้อ${i_today(exSel)}</div>
+      <div style="margin-top:12px">${e.l.map((t,j)=>`
+        <div class="exrow ${exOn(exSel,j)?'on':''}" data-extick="${j}">
+          <button class="exbox" aria-pressed="${exOn(exSel,j)}" aria-label="ติ๊กว่าทำแล้ว">${check}</button>
+          <div class="bd">${esc(t)}</div></div>`).join('')}</div>
+    </article>
+    <article class="card" style="background:var(--go-soft);border-color:transparent">
+      <div style="font-size:.88rem;line-height:1.55">สัปดาห์นี้ลงมือไปแล้ว <b class="num">${week}</b> จาก 7 วัน
+      <div class="tiny muted" style="margin-top:4px">เป้าคือความสม่ำเสมอ ไม่ใช่ออกหนักทุกวัน — ฝึกแรงต้าน 3 วันกับคาร์ดิโอ 3 วันก็พอแล้ว</div></div>
+    </article>`;
+}
+function i_today(i){return i===dowIdx()?' · วันนี้':''}
 
 /* ---------- today ---------- */
 function dueToday(g){
@@ -499,7 +564,7 @@ function syncBell(){
   d.hidden=!notYet&&!left;
 }
 function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
-function render(){renderToday();renderGoals();renderStats();syncBell();persist()}
+function render(){renderToday();renderGoals();renderStats();renderEx();syncBell();persist()}
 
 /* ---------- toast ---------- */
 function toast(title,body,k='',action){
@@ -679,9 +744,17 @@ document.addEventListener('click',e=>{
       toast('พักเป้านี้แล้ว','ไม่ลบข้อมูล กดกลับมาทำต่อได้ที่แท็บเป้าหมาย','r')}}
     return}
 
+  const xd=t.closest('[data-exday]');
+  if(xd){exSel=+xd.dataset.exday;renderEx();return}
+
+  const xt=t.closest('[data-extick]');
+  if(xt){const j=xt.dataset.extick,k=exDayKey(exSel);
+    if(dayLog(k)['x'+j])delete S.log[k]['x'+j];else ensureDay(k)['x'+j]=true;
+    renderEx();persist();return}
+
   const tab=t.closest('[data-tab]');
   if(tab){$$('[data-tab]').forEach(b=>b.setAttribute('aria-selected',b===tab));
-    ['today','goals','stats','idea'].forEach(k=>$('#p-'+k).hidden=(k!==tab.dataset.tab));
+    ['today','goals','ex','stats','idea'].forEach(k=>$('#p-'+k).hidden=(k!==tab.dataset.tab));
     window.scrollTo({top:0,behavior:'smooth'});return}
 
   if(t.closest('#seedPlan')){
@@ -718,7 +791,7 @@ render();
 
 <script>
 /* ---------- เวอร์ชัน / อัปเดตอัตโนมัติ ---------- */
-const APP_VERSION = '1.6.0';
+const APP_VERSION = '1.7.0';
 
 if ('serviceWorker' in navigator) {
   addEventListener('load', async () => {
