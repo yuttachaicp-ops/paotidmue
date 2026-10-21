@@ -1,5 +1,5 @@
 // เป้าติดมือ — service worker
-const CACHE = 'paotidmue-v1.3.0';
+const CACHE = 'paotidmue-v1.4.0';
 const ASSETS = [
   './', './index.html', './manifest.webmanifest',
   './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'
@@ -21,9 +21,15 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   if (req.mode === 'navigate') {
+    // เก็บเฉพาะหน้าแอปเอง ไม่ให้หน้าอื่นใต้ scope (เช่น /plan/) ไปทับแคชของ index
+    const scope = new URL('./', self.registration.scope).pathname;
+    const path = new URL(req.url).pathname;
+    const isApp = path === scope || path === scope + 'index.html';
     e.respondWith(
-      fetch(req).then(r => { caches.open(CACHE).then(c => c.put('./index.html', r.clone())); return r; })
-        .catch(() => caches.match('./index.html'))
+      fetch(req).then(r => {
+        if (isApp) caches.open(CACHE).then(c => c.put('./index.html', r.clone()));
+        return r;
+      }).catch(() => isApp ? caches.match('./index.html') : Response.error())
     );
     return;
   }

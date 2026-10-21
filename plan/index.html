@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101a1c" media="(prefers-color-scheme: dark)">
+<meta name="description" content="แผนอาหารและออกกำลังกาย 7 วัน พร้อมแคลอรี โปรตีน และรายการซื้อของ">
+<link rel="icon" href="../icon-192.png">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px system-ui,sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<title>แผน 7 วัน เพิ่มกล้าม</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
+<style>
+/* Layout: หนึ่งคอลัมน์บนมือถือ · สองคอลัมน์บนจอกว้าง (อาหารซ้าย / ออกกำลังกาย+บันทึกขวา) */
+:root{
+  --bg:#FCFDFB;
+  --meadow:#F1F8F2;
+  --soft:#F2F8F3;
+  --surface:#FFFFFF;
+  --surface-2:#F2F7F3;
+  --ink:#28433A;
+  --ink-soft:#85A098;
+  --line:#E9F2EC;
+  --go:#58BA83;
+  --go-soft:#E9F7EE;
+  --on-go:#FFFFFF;
+  --warn:#DEA552;
+  --warn-soft:#FDF5E8;
+  --rest:#6FB4E3;
+  --rest-soft:#EAF5FD;
+  --display:"Bai Jamjuree",system-ui,sans-serif;
+  --body:"IBM Plex Sans Thai",system-ui,sans-serif;
+  --r:18px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#101A1C;--meadow:#13231B;--soft:#192522;--surface:#1A2528;--surface-2:#223032;--ink:#EAF3EF;--ink-soft:#9BB0AC;--line:#293739;
+  --go:#74D4A0;--go-soft:#173327;--on-go:#0E1F19;--warn:#E6B86D;--warn-soft:#352A1C;--rest:#86C4EC;--rest-soft:#182B38;color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#101A1C;--meadow:#13231B;--soft:#192522;--surface:#1A2528;--surface-2:#223032;--ink:#EAF3EF;--ink-soft:#9BB0AC;--line:#293739;
+  --go:#74D4A0;--go-soft:#173327;--on-go:#0E1F19;--warn:#E6B86D;--warn-soft:#352A1C;--rest:#86C4EC;--rest-soft:#182B38;color-scheme:dark;}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);margin:0;-webkit-font-smoothing:antialiased;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 60px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--go);outline-offset:2px;border-radius:6px}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--ink-soft)}
+.tiny{font-size:.76rem}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--surface) 90%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 0}
+.title{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.title h1{font-size:1.2rem}
+.title span{font-size:.78rem;color:var(--ink-soft)}
+.days{display:flex;gap:6px;margin-top:11px;overflow-x:auto;padding-bottom:9px;scrollbar-width:none}
+.days::-webkit-scrollbar{display:none}
+.days button{flex:1 0 auto;min-width:56px;background:var(--surface-2);border:0;border-radius:99px;padding:8px 14px;font-size:.84rem;color:var(--ink-soft);font-weight:500;white-space:nowrap}
+.days button[aria-pressed="true"]{background:var(--go);color:var(--on-go);font-weight:600}
+.days button.today::after{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:currentColor;margin-left:6px;vertical-align:middle;opacity:.65}
+
+.cols{display:grid;grid-template-columns:1fr;gap:14px;margin-top:18px;align-items:start}
+.cols>*{min-width:0}
+.card{min-width:0}
+@media(min-width:900px){.cols{grid-template-columns:1.25fr .9fr;gap:18px}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 17px;margin-bottom:14px}
+.card>h2{font-size:1rem;margin-bottom:3px}
+.card .sub{font-size:.78rem;color:var(--ink-soft);margin-bottom:12px}
+
+/* เป้าหมาย */
+.targets{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:12px}
+@media(min-width:560px){.targets{grid-template-columns:repeat(4,1fr)}}
+.t{background:var(--soft);border-radius:14px;padding:12px}
+.t b{display:block;font-family:var(--display);font-size:1.4rem;line-height:1.15;font-variant-numeric:tabular-nums}
+.t span{font-size:.72rem;color:var(--ink-soft)}
+.t.k b{color:var(--go)}
+.note{background:var(--warn-soft);border-radius:14px;padding:12px 13px;font-size:.8rem;line-height:1.6;margin-top:12px}
+.note b{font-weight:600}
+
+/* แถวติ๊ก */
+.row{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.row .bd{flex:1;min-width:0}
+.row .lb{font-size:.7rem;font-weight:600;color:var(--go);letter-spacing:.03em}
+.row .tx{font-size:.88rem;margin-top:2px}
+.row .mc{font-size:.74rem;color:var(--ink-soft);margin-top:3px;font-variant-numeric:tabular-nums}
+.row.on .tx{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:var(--line)}
+.box{width:26px;height:26px;border-radius:9px;border:2px solid var(--line);background:transparent;flex:none;display:grid;place-items:center;margin-top:3px;transition:.15s}
+.box svg{width:13px;height:13px;opacity:0;transform:scale(.6);transition:.15s;stroke:var(--on-go)}
+.row.on .box{background:var(--go);border-color:var(--go)}
+.row.on .box svg{opacity:1;transform:scale(1)}
+.opt{background:var(--rest-soft);border-radius:12px;padding:3px 10px;margin-top:9px}
+.opt .lb{color:var(--rest)}
+
+/* ความคืบหน้า */
+.prog{margin-top:14px;display:flex;flex-direction:column;gap:11px}
+.pline b{font-size:.82rem}
+.pline .r{float:right;font-size:.78rem;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.bar{height:9px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--go);transition:width .4s cubic-bezier(.2,.8,.2,1)}
+.bar.p i{background:var(--rest)}
+
+/* ตารางสรุปสัปดาห์ */
+.tblwrap{overflow-x:auto;max-width:100%;margin-top:10px}
+table{border-collapse:collapse;width:100%;font-size:.82rem;min-width:420px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--ink-soft);font-size:.74rem;white-space:nowrap}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.cur td{background:var(--go-soft)}
+
+/* ฟอร์มบันทึก */
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+.fields label{font-size:.74rem;font-weight:600;color:var(--ink-soft);display:block;margin-bottom:4px}
+input,textarea,select{width:100%;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:12px;padding:10px 12px;font:inherit;font-size:.88rem}
+textarea{resize:vertical;min-height:58px;grid-column:1/-1}
+.wk{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.wk span{background:var(--surface-2);border-radius:99px;padding:5px 11px;font-size:.74rem;font-variant-numeric:tabular-nums}
+
+.shop{display:grid;grid-template-columns:1fr;gap:2px;margin-top:6px}
+@media(min-width:560px){.shop{grid-template-columns:1fr 1fr;column-gap:18px}}
+.ghost{background:var(--surface-2);border:0;border-radius:99px;padding:8px 15px;font-size:.78rem;color:var(--ink-soft)}
+.foot{margin-top:22px;font-size:.76rem;line-height:1.65;color:var(--ink-soft);background:var(--soft);border-radius:14px;padding:14px 15px}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+
+<header class="top"><div class="top-in">
+  <div class="title"><h1>แผน 7 วัน เพิ่มกล้าม</h1><span>ชาย 26 ปี · 187 ซม. · 72–75 กก. · เป้าหมายเพิ่มกล้ามเนื้อ</span></div>
+  <nav class="days" id="days"></nav>
+</div></header>
+
+<div class="wrap">
+  <div class="card" id="targetCard">
+    <h2>เป้าหมายต่อวัน</h2>
+    <div class="sub">ประมาณการจากส่วนสูง น้ำหนัก อายุ และกิจกรรมที่คุณบอกไว้</div>
+    <div class="targets">
+      <div class="t k"><b class="num">2,900</b><span>กิโลแคลอรี/วัน</span></div>
+      <div class="t"><b class="num">140–170</b><span>กรัมโปรตีน/วัน</span></div>
+      <div class="t"><b class="num">350–400</b><span>กรัมคาร์บ/วัน</span></div>
+      <div class="t"><b class="num">70–90</b><span>กรัมไขมัน/วัน</span></div>
+    </div>
+    <div class="note">
+      <b>ตัวเลขนี้เป็นค่าประมาณสำหรับใช้เป็นจุดเริ่มต้น ไม่ใช่ค่าทางการแพทย์</b> — คำนวณจากสูตร Mifflin-St Jeor
+      ได้พลังงานพื้นฐานราว 1,780 kcal คูณกับกิจกรรม (นั่งทำงาน + วิ่งงานส่งของ + ฝึก 4–5 วัน) ได้ราว 2,750–3,050 kcal
+      แล้วบวกส่วนเกินเล็กน้อยสำหรับสร้างกล้ามเนื้อ จึงเริ่มที่ประมาณ 2,900 ส่วนโปรตีนคิดที่ราว 2 กรัมต่อน้ำหนักตัว 1 กิโลกรัม<br><br>
+      ของเดิมในเอกสารตั้งไว้ 2,600 ซึ่งค่อนข้างน้อยสำหรับคนสูง 187 ซม. ที่ขยับทั้งวัน
+      วิธีเช็กว่าตัวเลขเหมาะไหมคือ <b>ชั่งน้ำหนักตอนเช้าหลังเข้าห้องน้ำ 3–4 วัน/สัปดาห์ แล้วดูค่าเฉลี่ยรายสัปดาห์</b>
+      ถ้าขึ้นช้ากว่า 0.2 กก./สัปดาห์ ให้เพิ่ม 150–200 kcal/วัน ถ้าขึ้นเร็วเกิน 0.5 กก./สัปดาห์ ให้ลด 100–200 kcal/วัน<br><br>
+      ถ้ามีโรคประจำตัวหรือแพทย์กำหนดอาหารเฉพาะ ควรปรึกษาแพทย์หรือนักกำหนดอาหารก่อนใช้แผนนี้
+    </div>
+  </div>
+
+  <div class="cols">
+    <div>
+      <div class="card">
+        <h2 id="mealHead">มื้ออาหาร</h2>
+        <div class="sub">ติ๊กเมื่อกินแล้ว · ข้าว 1 ทัพพี ≈ 80 กรัมหุงสุก · เนื้อสัตว์ชั่งหลังปรุง</div>
+        <div id="meals"></div>
+        <div class="prog">
+          <div class="pline"><b>พลังงาน</b><span class="r" id="kcalR"></span><div class="bar"><i id="kcalB"></i></div></div>
+          <div class="pline"><b>โปรตีน</b><span class="r" id="protR"></span><div class="bar p"><i id="protB"></i></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>สรุปทั้งสัปดาห์</h2>
+        <div class="sub">ยอดรวมโดยประมาณของแต่ละวัน (รวมมื้อเสริมแล้ว)</div>
+        <div class="tblwrap"><table id="weekTbl"></table></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2 id="exHead">ออกกำลังกาย</h2>
+        <div class="sub">วอร์มอัป 5 นาทีก่อน และคูลดาวน์หลังเสมอ</div>
+        <div id="ex"></div>
+      </div>
+
+      <div class="card">
+        <h2>บันทึกวันนี้</h2>
+        <div class="sub">ชั่งตอนเช้าหลังเข้าห้องน้ำ ใส่เท่าที่จำได้ก็พอ</div>
+        <div class="fields">
+          <div><label for="w">น้ำหนัก (กก.)</label><input id="w" inputmode="decimal" placeholder="73.5"></div>
+          <div><label for="sl">นอนไปกี่ชั่วโมง</label><input id="sl" inputmode="decimal" placeholder="7.5"></div>
+          <textarea id="fe" placeholder="รู้สึกยังไง หิวไหม แรงพอไหม เจ็บตรงไหนรึเปล่า"></textarea>
+        </div>
+        <div class="wk" id="wk"></div>
+      </div>
+
+      <div class="card">
+        <h2>รายการซื้อของ 7 วัน</h2>
+        <div class="sub">ติ๊กตอนอยู่ในตลาดได้เลย · ปริมาณเผื่อไว้สำหรับคนเดียว</div>
+        <div class="shop" id="shop"></div>
+        <div style="margin-top:12px"><button class="ghost" id="clearShop">ล้างเครื่องหมายทั้งหมด</button></div>
+      </div>
+
+      <div class="card">
+        <h2>ตารางเวลาในหนึ่งวัน</h2>
+        <div class="tblwrap"><table id="timeTbl"></table></div>
+        <div class="note" style="background:var(--rest-soft)">
+          ถ้าตอนนี้ยังนอนเที่ยงคืน–ตี 1 อย่าเพิ่งฝืนตื่นตี 5 ทุกวัน ให้ขยับเวลานอนเร็วขึ้นทีละ 15–30 นาที
+          คืนไหนนอนไม่พอ ให้เลื่อนหรือลดความหนักของการออกกำลังกายแทน การอดนอนเพื่อไปฝึกทำให้กล้ามโตช้าลง
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    ตัวเลขพลังงานและโปรตีนของแต่ละเมนูเป็นค่าประมาณ คลาดเคลื่อนได้ราว ±10–15% ขึ้นกับปริมาณน้ำมัน ขนาดเสิร์ฟจริง
+    และส่วนของเนื้อที่ใช้ แผนนี้ไม่มีเมนูปลาตามที่แจ้งไว้ และมีข้าวโอ๊ตใน 5 วันจาก 7 วัน ·
+    ข้อมูลที่กดทั้งหมดเก็บอยู่ในเครื่องนี้เท่านั้น เปิดคนละเครื่องจะไม่เห็นกัน
+  </div>
+</div>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const check='<svg viewBox="0 0 24 24" fill="none" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg>';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const KCAL=2900,PROT=[140,170];
+
+const DAYS=[
+{d:'จันทร์',meals:[
+  {m:'เช้า',t:'ข้าวโอ๊ต 60 ก. + นมจืด 250 มล. + กล้วย 1 ลูก + ไข่ต้ม 2 ฟอง',k:640,p:30},
+  {m:'กลางวัน',t:'ข้าวกะเพราไก่ — ข้าว 3 ทัพพี + ไก่สุก 150 ก. + ไข่ดาว 1 ฟอง',k:790,p:50},
+  {m:'เย็น',t:'ข้าว 3 ทัพพี + ไก่ย่าง 150 ก. + ผักลวกหรือผัดน้ำมันน้อย',k:620,p:48},
+  {m:'ของว่าง',t:'โยเกิร์ตรสธรรมชาติ 1 ถ้วย + นม 1 กล่อง + ถั่ว 1 กำมือเล็ก',k:450,p:20}],
+ ex:{n:'ฝึกแรงต้านทั้งตัว',l:['วิดพื้น 3 เซต × 6–12 ครั้ง (พิงโต๊ะหรือกำแพงได้ถ้ายังไม่ไหว)','Squat 3 เซต × 12–15 ครั้ง','Glute bridge 3 เซต × 12–15 ครั้ง','Crunch 2 เซต × 10–15 ครั้ง','Plank 2 เซต × 20–30 วินาที','พักระหว่างเซต 60–120 วินาที']}},
+{d:'อังคาร',meals:[
+  {m:'เช้า',t:'โจ๊กข้าวโอ๊ต 60 ก. + หมูสับไม่ติดมัน 120 ก. + ไข่ 1 ฟอง',k:525,p:42},
+  {m:'กลางวัน',t:'ข้าวหมูกระเทียม — ข้าว 3 ทัพพี + หมูสุก 150 ก. + ไข่ต้ม 1 ฟอง',k:755,p:47},
+  {m:'เย็น',t:'ข้าว 3 ทัพพี + เต้าหู้ 150 ก. ผัดหมูสับ 100 ก. + ผัก',k:740,p:41},
+  {m:'ของว่าง',t:'นม 1 กล่อง + กล้วย 1 ลูก + โยเกิร์ต 1 ถ้วย',k:380,p:15}],
+ ex:{n:'เดินเร็วหรือวิ่งเบา',l:['20–30 นาที ที่ความหนักพอพูดเป็นประโยคได้','ถ้าเพิ่งเริ่ม สลับเดินเร็ว 3 นาที วิ่งเบา 1 นาที','ยืดเหยียดท้ายคาบ 5 นาที']}},
+{d:'พุธ',meals:[
+  {m:'เช้า',t:'Overnight oats 60 ก. + นม 250 มล. + โยเกิร์ต + กล้วย',k:610,p:23},
+  {m:'กลางวัน',t:'ข้าวไก่กระเทียม — ข้าว 3 ทัพพี + ไก่สุก 180 ก. + ไข่ดาว 1 ฟอง',k:810,p:56},
+  {m:'เย็น',t:'สุกี้น้ำหมู 150 ก. + ไข่ 2 ฟอง + เต้าหู้',k:650,p:55},
+  {m:'ของว่าง',t:'นม 1 กล่อง + ไข่ต้ม 2 ฟอง',k:310,p:21}],
+ ex:{n:'ฝึกแรงต้านทั้งตัว',l:['ทำชุดเดียวกับวันจันทร์','ปรับจำนวนครั้งตามกำลัง ไม่ต้องฝืนจนเสียท่า','พักระหว่างเซต 60–120 วินาที']}},
+{d:'พฤหัสฯ',meals:[
+  {m:'เช้า',t:'ข้าวต้มหมูสับ 150 ก. + ไข่ 1 ฟอง + นม 1 กล่อง',k:585,p:45},
+  {m:'กลางวัน',t:'ข้าวกะเพราหมู — ข้าว 3 ทัพพี + หมูสุก 150 ก. + ไข่ดาว 1 ฟอง',k:790,p:48},
+  {m:'เย็น',t:'ข้าว 3 ทัพพี + ไก่ผัดขิง 180 ก. + ผัก',k:760,p:52},
+  {m:'ของว่าง',t:'กล้วย 1 ลูก + โยเกิร์ต 1 ถ้วย + ถั่ว 1 กำมือเล็ก',k:390,p:13}],
+ ex:{n:'คาร์ดิโอเบา',l:['เดินเร็ว 20–30 นาที','ยืดเหยียดเพิ่ม 5 นาที โดยเฉพาะต้นขาและสะโพก']}},
+{d:'ศุกร์',meals:[
+  {m:'เช้า',t:'ข้าวโอ๊ต 60 ก. + นม 250 มล. + กล้วย + ไข่ต้ม 2 ฟอง',k:640,p:30},
+  {m:'กลางวัน',t:'ข้าวหมูย่าง — ข้าว 3 ทัพพี + หมูย่าง 180 ก. + ไข่ต้ม 1 ฟอง',k:715,p:48},
+  {m:'เย็น',t:'ข้าว 3 ทัพพี + อกไก่ผัดผัก 180 ก. + เต้าหู้ 100 ก.',k:820,p:55},
+  {m:'ของว่าง',t:'นม 1 กล่อง + โยเกิร์ต 1 ถ้วย',k:280,p:14}],
+ ex:{n:'ฝึกแรงต้านทั้งตัว',l:['ทำชุดเดียวกับวันจันทร์','เมื่อทำครบจำนวนได้สบายติดกัน 2 สัปดาห์ ค่อยเพิ่มครั้งหรือเพิ่มความยาก','เน้นท่าถูกต้องมากกว่าจำนวน']}},
+{d:'เสาร์',meals:[
+  {m:'เช้า',t:'Overnight oats + นม + โยเกิร์ต + กล้วย',k:610,p:23},
+  {m:'กลางวัน',t:'ข้าวผัดไก่ใส่ไข่ — ใช้ไก่ 150–180 ก.',k:850,p:50},
+  {m:'เย็น',t:'ข้าว 3 ทัพพี + หมูผัดกระเทียม 180 ก. + ผัก',k:790,p:46},
+  {m:'ของว่าง',t:'นม 1 กล่อง + ไข่ต้ม 2 ฟอง + ผลไม้',k:400,p:22}],
+ ex:{n:'เดินหรือวิ่งตามกำลัง',l:['20–40 นาที แบบสบาย ๆ','ถ้าปวดล้าจากเมื่อวาน เปลี่ยนเป็นเดินเฉย ๆ ได้']}},
+{d:'อาทิตย์',meals:[
+  {m:'เช้า',t:'ข้าวไข่เจียวหมูสับ + นม 1 กล่อง',k:710,p:34},
+  {m:'กลางวัน',t:'ก๋วยเตี๋ยวหมูพิเศษ เพิ่มเนื้อและไข่ตามชอบ',k:650,p:40},
+  {m:'เย็น',t:'ข้าว 3 ทัพพี + ไก่ย่าง 180 ก. + เต้าหู้หรือไข่ต้ม + ผัก',k:790,p:55},
+  {m:'ของว่าง',t:'ข้าวโอ๊ต 40–50 ก. + นม + กล้วย',k:415,p:15}],
+ ex:{n:'พักฟื้น',l:['พักเต็มวัน หรือเดินเล่นเบา ๆ','เตรียมวัตถุดิบสำหรับสัปดาห์หน้า','เน้นกินให้ครบและนอนให้พอ — กล้ามโตตอนพัก ไม่ใช่ตอนฝึก']}}
+];
+const BOOST={m:'มื้อเสริม',t:'ข้าวโอ๊ต 40 ก. + นม 250 มล. + กล้วย 1 ลูก — ใส่เพื่อดันให้ถึงเป้าเพิ่มกล้าม',k:415,p:15,opt:true};
+DAYS.forEach(d=>d.meals.push({...BOOST}));
+
+const SHOP=['ข้าวโอ๊ต 500 ก.','ข้าวสาร 2 กก.','ไข่ไก่ 20 ฟอง','อกไก่หรือสะโพกไก่ 1.5 กก.','หมูไม่ติดมัน 1 กก.','หมูสับไม่ติดมัน 500 ก.','นมจืด 10 กล่อง','โยเกิร์ตรสธรรมชาติ 4 ถ้วย','เต้าหู้ 3 ก้อน','กล้วย 1 หวี','ผลไม้อื่น ๆ ตามชอบ','ผัก 3–4 ชนิด','ถั่วไม่ใส่เกลือ 200 ก.','กระเทียม พริก โหระพา','น้ำมันพืช ซีอิ๊ว น้ำปลา','เส้นก๋วยเตี๋ยวหรือวุ้นเส้น'];
+const TIME=[['05:00','ตื่นนอน ดื่มน้ำ 1 แก้ว'],['05:10','วอร์มอัป 5 นาที'],['05:15–05:40','ออกกำลังกายตามตารางของวันนั้น'],['05:40–05:50','คูลดาวน์และยืดเหยียด'],['06:00–06:30','มื้อเช้า'],['09:30–10:00','ของว่าง ถ้าหิว'],['12:00–13:00','มื้อกลางวัน'],['15:00–16:00','ของว่าง'],['18:00–19:00','มื้อเย็น'],['20:30','ลดการใช้หน้าจอ'],['21:00–21:30','เข้านอน ให้ได้ 7.5–8 ชั่วโมง']];
+
+/* ---------- state ---------- */
+const KEY='mealplan.v1';
+let S={ticks:{},shop:{},log:{}};
+try{const r=JSON.parse(localStorage.getItem(KEY)||'null');if(r)S={...S,...r}}catch(_){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(_){}};
+const key=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+const todayIdx=()=>(new Date().getDay()+6)%7;
+let sel=todayIdx();
+const dayKey=i=>{const t=new Date();t.setDate(t.getDate()-(todayIdx()-i));return key(t)};
+const tickOn=(i,id)=>!!(S.ticks[dayKey(i)]||{})[id];
+function setTick(i,id,v){const k=dayKey(i);S.ticks[k]=S.ticks[k]||{};if(v)S.ticks[k][id]=1;else delete S.ticks[k][id];save()}
+
+/* ---------- render ---------- */
+function renderDays(){
+  $('#days').innerHTML=DAYS.map((d,i)=>`<button data-day="${i}" aria-pressed="${i===sel}" class="${i===todayIdx()?'today':''}">${d.d}</button>`).join('');
+}
+function renderMeals(){
+  const d=DAYS[sel];
+  $('#mealHead').textContent='มื้ออาหาร — วัน'+d.d;
+  $('#meals').innerHTML=d.meals.map((m,i)=>`
+    <div class="row ${tickOn(sel,'m'+i)?'on':''} ${m.opt?'opt':''}" data-tick="m${i}">
+      <button class="box" aria-pressed="${tickOn(sel,'m'+i)}" aria-label="ติ๊กว่ากิน${esc(m.m)}แล้ว">${check}</button>
+      <div class="bd"><div class="lb">${esc(m.m)}</div><div class="tx">${esc(m.t)}</div>
+        <div class="mc">≈ ${m.k.toLocaleString()} kcal · โปรตีน ${m.p} ก.</div></div>
+    </div>`).join('');
+  const got=d.meals.reduce((a,m,i)=>tickOn(sel,'m'+i)?{k:a.k+m.k,p:a.p+m.p}:a,{k:0,p:0});
+  const all=d.meals.reduce((a,m)=>({k:a.k+m.k,p:a.p+m.p}),{k:0,p:0});
+  $('#kcalR').textContent=`${got.k.toLocaleString()} / ${KCAL.toLocaleString()} kcal (แผนวันนี้ ${all.k.toLocaleString()})`;
+  $('#protR').textContent=`${got.p} / ${PROT[0]}–${PROT[1]} ก. (แผนวันนี้ ${all.p})`;
+  $('#kcalB').style.width=Math.min(100,got.k/KCAL*100)+'%';
+  $('#protB').style.width=Math.min(100,got.p/PROT[1]*100)+'%';
+}
+function renderEx(){
+  const d=DAYS[sel];
+  $('#exHead').textContent=d.ex.n+' — วัน'+d.d;
+  $('#ex').innerHTML=d.ex.l.map((t,i)=>`
+    <div class="row ${tickOn(sel,'e'+i)?'on':''}" data-tick="e${i}">
+      <button class="box" aria-pressed="${tickOn(sel,'e'+i)}" aria-label="ติ๊กว่าทำแล้ว">${check}</button>
+      <div class="bd"><div class="tx">${esc(t)}</div></div>
+    </div>`).join('');
+}
+function renderWeek(){
+  $('#weekTbl').innerHTML=`<thead><tr><th>วัน</th><th class="n">kcal</th><th class="n">โปรตีน</th><th>ออกกำลังกาย</th></tr></thead><tbody>`+
+    DAYS.map((d,i)=>{const s=d.meals.reduce((a,m)=>({k:a.k+m.k,p:a.p+m.p}),{k:0,p:0});
+      return `<tr class="${i===sel?'cur':''}"><td>${d.d}</td><td class="n">${s.k.toLocaleString()}</td><td class="n">${s.p} ก.</td><td>${esc(d.ex.n)}</td></tr>`}).join('')+
+    `</tbody>`;
+}
+function renderShop(){
+  $('#shop').innerHTML=SHOP.map((t,i)=>`
+    <div class="row ${S.shop['s'+i]?'on':''}" data-shop="s${i}" style="padding:8px 0">
+      <button class="box" aria-pressed="${!!S.shop['s'+i]}" aria-label="ติ๊กว่าซื้อแล้ว">${check}</button>
+      <div class="bd"><div class="tx">${esc(t)}</div></div>
+    </div>`).join('');
+}
+function renderLog(){
+  const l=S.log[dayKey(sel)]||{};
+  $('#w').value=l.w||'';$('#sl').value=l.sl||'';$('#fe').value=l.fe||'';
+  const ws=[];for(let i=6;i>=0;i--){const k=dayKey(sel-i<0?0:sel-i);const v=(S.log[k]||{}).w;if(v)ws.push(v)}
+  const nums=ws.map(Number).filter(n=>n>0);
+  $('#wk').innerHTML=nums.length?`<span>บันทึกน้ำหนักแล้ว ${nums.length} ครั้ง</span><span>เฉลี่ย ${(nums.reduce((a,b)=>a+b,0)/nums.length).toFixed(1)} กก.</span>`
+    :`<span class="muted">ยังไม่มีบันทึกน้ำหนัก — ใส่สัก 3–4 วัน/สัปดาห์แล้วดูค่าเฉลี่ย</span>`;
+}
+function renderTime(){
+  $('#timeTbl').innerHTML='<tbody>'+TIME.map(([a,b])=>`<tr><td style="white-space:nowrap;font-variant-numeric:tabular-nums">${a}</td><td>${esc(b)}</td></tr>`).join('')+'</tbody>';
+}
+function render(){renderDays();renderMeals();renderEx();renderWeek();renderLog()}
+
+document.addEventListener('click',e=>{
+  const d=e.target.closest('[data-day]');
+  if(d){sel=+d.dataset.day;render();return}
+  const t=e.target.closest('[data-tick]');
+  if(t){const id=t.dataset.tick;setTick(sel,id,!tickOn(sel,id));renderMeals();renderEx();return}
+  const s=e.target.closest('[data-shop]');
+  if(s){const id=s.dataset.shop;if(S.shop[id])delete S.shop[id];else S.shop[id]=1;save();renderShop();return}
+  if(e.target.closest('#clearShop')){S.shop={};save();renderShop();return}
+});
+['w','sl','fe'].forEach(id=>document.addEventListener('input',e=>{
+  if(e.target.id!==id)return;
+  const k=dayKey(sel);S.log[k]=S.log[k]||{};S.log[k][id]=e.target.value;save();
+  if(id==='w')renderLog();
+}));
+render();renderShop();renderTime();
+</script>
+
+<div style="max-width:1120px;margin:0 auto 34px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))">
+  <a href="../" style="display:inline-block;background:var(--surface-2);color:var(--ink-soft);border-radius:99px;padding:9px 18px;font:inherit;font-size:.82rem;text-decoration:none;font-family:var(--body)">← กลับไปแอปเป้าติดมือ</a>
+</div>
+</body>
+</html>

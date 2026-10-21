@@ -120,6 +120,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .acts button{background:var(--surface-2);border:0;border-radius:99px;padding:6px 12px;font-size:.74rem;color:var(--ink-soft)}
 .acts button:hover{color:var(--ink)}
 .acts button.danger:hover{color:var(--late)}
+.acts .planlink{background:var(--go-soft);color:var(--go);border-radius:99px;padding:6px 12px;font-size:.74rem;text-decoration:none;font-weight:600}
 .stepper{display:flex;align-items:center;gap:8px;margin-top:10px}
 .stepper button{width:32px;height:32px;border-radius:10px;border:0;background:var(--surface-2);font-size:1.05rem;line-height:1}
 .stepper input{width:76px;padding:7px 8px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);text-align:center;font:600 .92rem var(--body);font-variant-numeric:tabular-nums}
@@ -283,6 +284,19 @@ button{font:inherit;color:inherit;cursor:pointer}
         <li><b>คาดการณ์ปลายทาง</b> — จังหวะนี้จะถึงเป้าเมื่อไหร่</li>
       </ul>
     </div></div>
+    <div class="sec"><div class="card pillar">
+      <span class="chip c-count">แผนประกอบ</span>
+      <h3>แผนกินกับเทรน 7 วัน</h3>
+      <ul>
+        <li>ตารางอาหารพร้อมแคลอรีและโปรตีนรายมื้อ ตารางออกกำลังกาย และรายการซื้อของแบบติ๊กได้</li>
+        <li>เปิดดูตอนเข้าครัวหรือตอนอยู่ในตลาด ส่วนแอปนี้ไว้เตือนและเก็บสถิติระยะยาว</li>
+      </ul>
+      <div class="acts" style="margin-top:12px">
+        <a class="planlink" href="https://yuttachaicp-ops.github.io/paotidmue/plan/" target="_blank" rel="noopener">เปิดหน้าแผน 7 วัน</a>
+        <button id="seedPlan">สร้างเป้า 4 อันจากแผนนี้</button>
+      </div>
+    </div></div>
+
     <div class="sec"><div class="card" style="display:flex;align-items:center;gap:12px">
       <div style="flex:1;min-width:0"><b style="font-size:.9rem">โหมดสีของแอป</b>
         <div class="tiny muted">ปกติจะตามเครื่อง กดเพื่อสลับสว่าง/มืดเอง</div></div>
@@ -621,6 +635,20 @@ document.addEventListener('click',e=>{
     ['today','goals','stats','idea'].forEach(k=>$('#p-'+k).hidden=(k!==tab.dataset.tab));
     window.scrollTo({top:0,behavior:'smooth'});return}
 
+  if(t.closest('#seedPlan')){
+    const seed=[
+      {type:'habit',title:'กินให้ครบ 2,900 kcal',perWeek:0,note:'ตามแผนกินกับเทรน 7 วัน'},
+      {type:'habit',title:'ฝึกแรงต้านทั้งตัว',perWeek:3,note:'จันทร์ พุธ ศุกร์ หรือวันไหนก็ได้ที่สะดวก'},
+      {type:'habit',title:'เดินเร็วหรือวิ่งเบา 20–30 นาที',perWeek:3,note:'สลับกับวันฝึกแรงต้าน'},
+      {type:'habit',title:'นอนให้ได้ 7.5–8 ชั่วโมง',perWeek:0,note:'กล้ามโตตอนพัก ไม่ใช่ตอนฝึก'}
+    ];
+    const add=seed.filter(x=>!S.goals.some(g=>g.title===x.title));
+    if(!add.length){toast('มีอยู่แล้วครบ','เป้าทั้ง 4 อันจากแผนนี้ถูกสร้างไว้แล้ว');return}
+    add.forEach(x=>S.goals.push({id:uid(),created:todayKey(),...x}));
+    render();$('[data-tab="today"]').click();
+    toast('สร้างเป้าให้แล้ว '+add.length+' อัน','เริ่มติ๊กได้เลยวันนี้ ดูทั้งหมดที่แท็บเป้าหมาย');
+    return}
+
   if(t.closest('#btnInfo')){$('[data-tab="idea"]').click();return}
 
   if(t.closest('#btnTheme')){const r=document.documentElement;
@@ -641,7 +669,7 @@ render();
 
 <script>
 /* ---------- เวอร์ชัน / อัปเดตอัตโนมัติ ---------- */
-const APP_VERSION = '1.3.0';
+const APP_VERSION = '1.4.0';
 
 if ('serviceWorker' in navigator) {
   addEventListener('load', async () => {
