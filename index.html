@@ -438,10 +438,56 @@ renderToday();renderGoals();renderHeat();
 </script>
 
 <script>
-/* ---------- ติดตั้ง / ออฟไลน์ ---------- */
+/* ---------- เวอร์ชัน / อัปเดตอัตโนมัติ ---------- */
+const APP_VERSION = '1.1.0';
+
 if ('serviceWorker' in navigator) {
-  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+  addEventListener('load', async () => {
+    let reg;
+    try { reg = await navigator.serviceWorker.register('sw.js'); } catch (_) { return; }
+
+    // เช็กของใหม่ทุก 30 นาที และทุกครั้งที่กลับมาเปิดแอป
+    setInterval(() => reg.update().catch(()=>{}), 30 * 60 * 1000);
+    addEventListener('focus', () => reg.update().catch(()=>{}));
+    addEventListener('visibilitychange', () => { if (!document.hidden) reg.update().catch(()=>{}); });
+
+    reg.addEventListener('updatefound', () => {
+      const nw = reg.installing; if (!nw) return;
+      nw.addEventListener('statechange', () => {
+        if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+          toast('มีเวอร์ชันใหม่', 'กำลังอัปเดตให้อัตโนมัติ เดี๋ยวหน้าจะรีเฟรชเอง');
+          nw.postMessage({ type: 'skipWaiting' });
+        }
+      });
+    });
+  });
+
+  // เวอร์ชันใหม่เข้าควบคุมแล้ว → เซฟงานที่ค้าง แล้วรีโหลดครั้งเดียว
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return; refreshing = true;
+    try { save(); sessionStorage.setItem('justUpdated', '1'); } catch (_) {}
+    setTimeout(() => location.reload(), 900);
+  });
 }
+
+// บอกผลหลังรีเฟรช
+try {
+  if (sessionStorage.getItem('justUpdated')) {
+    sessionStorage.removeItem('justUpdated');
+    setTimeout(() => toast('อัปเดตเรียบร้อย', 'ตอนนี้เป็นเวอร์ชัน ' + APP_VERSION + ' แล้ว ข้อมูลเดิมอยู่ครบ'), 600);
+  }
+} catch (_) {}
+
+// แสดงเวอร์ชันท้ายแท็บแนวคิด
+addEventListener('load', () => {
+  const p = document.querySelector('#p-idea'); if (!p) return;
+  const v = document.createElement('div');
+  v.className = 'sec tiny muted';
+  v.style.textAlign = 'center';
+  v.textContent = 'เป้าติดมือ เวอร์ชัน ' + APP_VERSION + ' · อัปเดตเองอัตโนมัติเมื่อมีของใหม่';
+  p.append(v);
+});
 
 let deferredPrompt = null;
 addEventListener('beforeinstallprompt', e => {

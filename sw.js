@@ -1,12 +1,12 @@
 // เป้าติดมือ — service worker
-const CACHE = 'paotidmue-v1';
+const CACHE = 'paotidmue-v1.1.0';
 const ASSETS = [
   './', './index.html', './manifest.webmanifest',
   './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));  // ไม่ skipWaiting ทันที รอให้หน้าเว็บสั่ง
 });
 
 self.addEventListener('activate', e => {
@@ -33,6 +33,7 @@ self.addEventListener('fetch', e => {
 // แสดงการแจ้งเตือนที่หน้าเว็บสั่งมา (ใช้ได้เมื่อแอปเปิดอยู่หรือเพิ่งถูกปลุก)
 self.addEventListener('message', e => {
   const d = e.data || {};
+  if (d.type === 'skipWaiting') { self.skipWaiting(); return; }
   if (d.type === 'notify') {
     self.registration.showNotification(d.title || 'เป้าติดมือ', {
       body: d.body || '',
