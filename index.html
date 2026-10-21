@@ -718,12 +718,16 @@ render();
 
 <script>
 /* ---------- เวอร์ชัน / อัปเดตอัตโนมัติ ---------- */
-const APP_VERSION = '1.5.0';
+const APP_VERSION = '1.6.0';
 
 if ('serviceWorker' in navigator) {
   addEventListener('load', async () => {
     let reg;
-    try { reg = await navigator.serviceWorker.register('sw.js'); } catch (_) { return; }
+    // updateViaCache:'none' = ไม่ให้เบราว์เซอร์ใช้ sw.js จากแคช HTTP จะได้เห็นของใหม่ทันที
+    try { reg = await navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }); } catch (_) { return; }
+    window.__reg = reg;
+    // ถ้ามีตัวใหม่รออยู่ตั้งแต่รอบก่อน ให้เข้าคุมเลย
+    if (reg.waiting && navigator.serviceWorker.controller) reg.waiting.postMessage({ type: 'skipWaiting' });
 
     // เช็กของใหม่ทุก 30 นาที และทุกครั้งที่กลับมาเปิดแอป
     setInterval(() => reg.update().catch(()=>{}), 30 * 60 * 1000);
@@ -750,22 +754,47 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// บอกผลหลังรีเฟรช
+// บอกผลหลังอัปเดต — เทียบเวอร์ชันที่เคยเปิดกับเวอร์ชันปัจจุบัน
+// ทำแบบนี้เพราะส่วนใหญ่แอปอัปเดตตอนปิดอยู่ ไม่มีจังหวะให้เด้งเตือนระหว่างใช้งาน
 try {
-  if (sessionStorage.getItem('justUpdated')) {
-    sessionStorage.removeItem('justUpdated');
-    setTimeout(() => toast('อัปเดตเรียบร้อย', 'ตอนนี้เป็นเวอร์ชัน ' + APP_VERSION + ' แล้ว ข้อมูลเดิมอยู่ครบ'), 600);
+  const prev = localStorage.getItem('paotidmue.ver');
+  if (prev && prev !== APP_VERSION) {
+    setTimeout(() => toast('อัปเดตเป็นเวอร์ชัน ' + APP_VERSION + ' แล้ว',
+      'จากเวอร์ชัน ' + prev + ' · ข้อมูลเดิมอยู่ครบ ดูว่ามีอะไรใหม่ได้ที่แท็บแนวคิด'), 700);
   }
+  localStorage.setItem('paotidmue.ver', APP_VERSION);
+  sessionStorage.removeItem('justUpdated');
 } catch (_) {}
 
-// แสดงเวอร์ชันท้ายแท็บแนวคิด
+// ปุ่มตรวจหาอัปเดตด้วยตัวเอง
+async function checkUpdate(btn) {
+  const old = btn.textContent; btn.textContent = 'กำลังตรวจ…'; btn.disabled = true;
+  const reg = window.__reg || (navigator.serviceWorker && await navigator.serviceWorker.getRegistration());
+  if (!reg) { btn.textContent = old; btn.disabled = false;
+    toast('ยังไม่ได้ติดตั้ง', 'เปิดหน้านี้จากลิงก์เว็บแล้วกดติดตั้งลงหน้าโฮมก่อน'); return; }
+  try { await reg.update(); } catch (_) {}
+  await new Promise(r => setTimeout(r, 1500));
+  btn.textContent = old; btn.disabled = false;
+  if (reg.waiting) { reg.waiting.postMessage({ type: 'skipWaiting' });
+    toast('เจอเวอร์ชันใหม่', 'กำลังอัปเดตให้ เดี๋ยวหน้าจะรีเฟรชเอง'); }
+  else if (reg.installing) toast('เจอเวอร์ชันใหม่', 'กำลังดาวน์โหลด รอสักครู่');
+  else toast('เป็นเวอร์ชันล่าสุดแล้ว', 'ตอนนี้ใช้เวอร์ชัน ' + APP_VERSION);
+}
+
+// การ์ดเวอร์ชัน + ปุ่มตรวจหาอัปเดต ท้ายแท็บแนวคิด
 addEventListener('load', () => {
   const p = document.querySelector('#p-idea'); if (!p) return;
-  const v = document.createElement('div');
-  v.className = 'sec tiny muted';
-  v.style.textAlign = 'center';
-  v.textContent = 'เป้าติดมือ เวอร์ชัน ' + APP_VERSION + ' · อัปเดตเองอัตโนมัติเมื่อมีของใหม่';
-  p.append(v);
+  const sec = document.createElement('div');
+  sec.className = 'sec';
+  sec.innerHTML = '<div class="card" style="display:flex;align-items:center;gap:12px">' +
+    '<div style="flex:1;min-width:0"><b style="font-size:.9rem">เวอร์ชัน ' + APP_VERSION + '</b>' +
+    '<div class="tiny muted">ปกติอัปเดตเองตอนเปิดแอป กดตรวจเองได้ถ้าอยากเช็ก</div></div>' +
+    '<button id="btnUpd" class="ghostbtn">ตรวจหาอัปเดต</button></div>';
+  p.append(sec);
+  const st = document.createElement('style');
+  st.textContent = '.ghostbtn{background:var(--surface-2);border:0;border-radius:99px;padding:9px 15px;font-size:.78rem;color:var(--ink);flex:none}.ghostbtn:disabled{opacity:.6}';
+  document.head.append(st);
+  document.querySelector('#btnUpd').addEventListener('click', e => checkUpdate(e.currentTarget));
 });
 
 let deferredPrompt = null;
