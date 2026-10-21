@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101a1c" media="(prefers-color-scheme: dark)">
+<meta name="description" content="แอปตั้งเป้าหมายส่วนตัว พร้อมเตือนแบบไม่กดดัน">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="เป้าติดมือ">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px system-ui,sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<title>เป้าติดมือ</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
+<style>
+/* Layout: one phone-width column, a sticky status band on top, three stacked zones — วันนี้ (ลงมือ), เป้าหมาย (ภาพรวม), สรุป (กำลังใจ) */
+:root{
+  --bg:#FFFFFF;
+  --sky-top:#EFF8FD;
+  --meadow:#F2FAF4;
+  --surface:#FFFFFF;
+  --surface-2:#F2F8F4;
+  --ink:#28433A;
+  --ink-soft:#85A098;
+  --line:#E9F2EC;
+  --go:#58BA83;
+  --go-soft:#E9F7EE;
+  --warn:#DEA552;
+  --warn-soft:#FDF5E8;
+  --late:#E08E86;
+  --late-soft:#FDEFEC;
+  --rest:#6FB4E3;
+  --rest-soft:#EAF5FD;
+  --shadow:0 1px 2px rgba(42,58,54,.03),0 8px 22px rgba(42,58,54,.05);
+  --display:"Bai Jamjuree",system-ui,sans-serif;
+  --body:"IBM Plex Sans Thai",system-ui,sans-serif;
+  --r:20px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#101A1C;--sky-top:#16252C;--meadow:#13231B;--surface:#1A2528;--surface-2:#223032;--ink:#EAF3EF;--ink-soft:#9BB0AC;--line:#293739;
+  --go:#74D4A0;--go-soft:#173327;--warn:#E6B86D;--warn-soft:#352A1C;--late:#E89A92;--late-soft:#362321;
+  --rest:#86C4EC;--rest-soft:#182B38;--shadow:0 10px 28px rgba(0,0,0,.3);color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#101A1C;--sky-top:#16252C;--meadow:#13231B;--surface:#1A2528;--surface-2:#223032;--ink:#EAF3EF;--ink-soft:#9BB0AC;--line:#293739;
+  --go:#74D4A0;--go-soft:#173327;--warn:#E6B86D;--warn-soft:#352A1C;--late:#E89A92;--late-soft:#362321;
+  --rest:#86C4EC;--rest-soft:#182B38;--shadow:0 10px 28px rgba(0,0,0,.3);color-scheme:dark;}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);background-image:linear-gradient(180deg,var(--sky-top) 0%,rgba(255,255,255,0) 300px),linear-gradient(0deg,var(--meadow) 0%,rgba(255,255,255,0) 260px);background-repeat:no-repeat;background-attachment:fixed,fixed;color:var(--ink);font-family:var(--body);margin:0;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--surface) 86%,transparent);backdrop-filter:blur(10px)}
+.wrap{max-width:460px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 96px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--go);outline-offset:2px;border-radius:6px}
+
+/* ---- header ---- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);
+  margin-left:calc(-1*max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1*max(16px,env(safe-area-inset-right,0px)))}
+.top-in{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 0}
+.top-row{display:flex;align-items:center;gap:12px;position:relative}
+.sky{position:absolute;inset:-16px -40px auto;height:130px;background:radial-gradient(62% 100% at 20% 0%,color-mix(in srgb,var(--rest) 14%,transparent),transparent 72%),radial-gradient(58% 100% at 88% 6%,color-mix(in srgb,var(--go) 13%,transparent),transparent 72%);pointer-events:none}
+.date{flex:1;min-width:0}
+.date b{display:block;font-family:var(--display);font-size:1.18rem}
+.date span{font-size:.78rem;color:var(--ink-soft)}
+.iconbtn{width:38px;height:38px;border-radius:50%;border:0;background:var(--surface-2);display:grid;place-items:center;position:relative}
+.iconbtn .dot{position:absolute;top:6px;right:7px;width:8px;height:8px;border-radius:50%;background:var(--late);border:2px solid var(--surface)}
+.tabs{display:flex;gap:2px;margin-top:10px}
+.tabs button{flex:1;background:none;border:0;border-bottom:2px solid transparent;padding:9px 2px 10px;font-size:.84rem;color:var(--ink-soft);font-weight:500}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--go);font-weight:600}
+
+/* ---- generic ---- */
+.sec{margin-top:24px}
+.sec-h{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.sec-h h2{font-size:.95rem}
+.sec-h em{font-style:normal;font-size:.75rem;color:var(--ink-soft);margin-left:auto}
+.card{background:color-mix(in srgb,var(--surface) 86%,transparent);border:1px solid var(--line);border-radius:var(--r);padding:15px 16px;box-shadow:none;backdrop-filter:blur(6px)}
+.stack{display:flex;flex-direction:column;gap:11px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:.68rem;font-weight:600;padding:3px 8px;border-radius:99px;letter-spacing:.02em}
+.c-habit{background:var(--go-soft);color:var(--go)}
+.c-count{background:var(--rest-soft);color:var(--rest)}
+.c-proj{background:var(--warn-soft);color:var(--warn)}
+.c-year{background:var(--surface-2);color:var(--ink-soft)}
+.muted{color:var(--ink-soft)}
+.tiny{font-size:.74rem}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---- today card ---- */
+.task{display:flex;gap:12px;align-items:flex-start}
+.task .body{flex:1;min-width:0}
+.task h3{font-size:1rem;line-height:1.35}
+.task .meta{font-size:.76rem;color:var(--ink-soft);margin-top:3px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tick{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);background:transparent;flex:none;display:grid;place-items:center;margin-top:2px;transition:.18s}
+.tick svg{width:15px;height:15px;opacity:0;transform:scale(.6);transition:.18s}
+.done .tick{background:var(--go);border-color:var(--go)}
+.done .tick svg{opacity:1;transform:scale(1);stroke:#fff}
+.done h3{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:var(--line)}
+.acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.acts button{background:var(--surface-2);border:0;border-radius:99px;padding:6px 12px;font-size:.74rem;color:var(--ink-soft)}
+.acts button:hover{color:var(--ink)}
+.stepper{display:flex;align-items:center;gap:8px;margin-top:10px}
+.stepper button{width:32px;height:32px;border-radius:10px;border:0;background:var(--surface-2);font-size:1.05rem;line-height:1}
+.stepper input{width:70px;padding:7px 8px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);text-align:center;font:600 .92rem var(--body);font-variant-numeric:tabular-nums}
+.stepper .unit{font-size:.78rem;color:var(--ink-soft)}
+.bar{height:7px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:9px}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--go);transition:width .45s cubic-bezier(.2,.8,.2,1)}
+.bar.w i{background:var(--warn)}
+.pace{display:flex;justify-content:space-between;font-size:.72rem;color:var(--ink-soft);margin-top:5px}
+
+/* ---- goal list ---- */
+.goal{display:flex;gap:13px;align-items:center}
+.goal .ring{flex:none}
+.goal .body{flex:1;min-width:0}
+.goal h3{font-size:.95rem}
+.ms{display:flex;flex-direction:column;gap:6px;margin-top:10px;border-left:2px solid var(--line);padding-left:11px}
+.ms div{font-size:.8rem;display:flex;gap:7px;align-items:center}
+.ms .ok{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:var(--line)}
+.ms .now{font-weight:600}
+.paused{opacity:.55}
+
+/* ---- insights ---- */
+.big{font-family:var(--display);font-size:2.1rem;line-height:1;font-variant-numeric:tabular-nums}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.heat{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:10px}
+.heat i{aspect-ratio:1;border-radius:6px;background:var(--surface-2);max-width:100%}
+.heat i[data-l="1"]{background:color-mix(in srgb,var(--go) 28%,var(--surface-2))}
+.heat i[data-l="2"]{background:color-mix(in srgb,var(--go) 58%,var(--surface-2))}
+.heat i[data-l="3"]{background:var(--go)}
+.heat i[data-l="r"]{background:var(--rest-soft);border:1px dashed var(--rest)}
+.dow{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;font-size:.65rem;color:var(--ink-soft);text-align:center;margin-top:6px}
+.quote{border-left:3px solid var(--go);padding-left:12px;font-size:.92rem;line-height:1.55}
+
+/* ---- notifications ---- */
+.notif{display:flex;gap:11px;align-items:flex-start;padding:13px;border-radius:15px;background:var(--surface-2);border:0}
+.notif .ico{width:30px;height:30px;border-radius:9px;background:var(--go);color:#fff;display:grid;place-items:center;font-size:.8rem;font-weight:700;flex:none;font-family:var(--display)}
+.notif.w .ico{background:var(--warn)}
+.notif.l .ico{background:var(--late)}
+.notif.r .ico{background:var(--rest)}
+.notif b{display:block;font-size:.84rem}
+.notif p{margin:3px 0 0;font-size:.82rem;line-height:1.5;color:var(--ink-soft)}
+.when{font-size:.68rem;font-weight:600;color:var(--ink-soft);letter-spacing:.03em;margin-bottom:5px;display:block}
+.ladder{counter-reset:s;display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.ladder li{list-style:none;display:flex;gap:10px;font-size:.84rem;line-height:1.5}
+.ladder b{font-family:var(--display);color:var(--go);flex:none;width:18px}
+
+/* ---- concept ---- */
+.pillar{display:flex;flex-direction:column;gap:7px}
+.pillar h3{font-size:.95rem}
+.pillar ul{margin:0;padding-left:17px;display:flex;flex-direction:column;gap:5px}
+.pillar li{font-size:.84rem;line-height:1.5;color:var(--ink-soft)}
+.pillar li b{color:var(--ink);font-weight:600}
+
+/* ---- toast + sheet ---- */
+#toast{position:fixed;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 10px);z-index:60;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:460px;margin:0 auto}
+#toast .notif{box-shadow:0 10px 30px rgba(0,0,0,.18);background:var(--surface);animation:drop .32s cubic-bezier(.2,.9,.3,1)}
+@keyframes drop{from{transform:translateY(-14px);opacity:0}}
+.fab{position:fixed;left:0;right:0;bottom:0;z-index:25;background:linear-gradient(to top,var(--meadow) 58%,transparent);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));padding-top:22px}
+.fab-in{max-width:460px;margin:0 auto;display:flex;gap:8px}
+.fab button{flex:1;border:0;border-radius:14px;padding:13px;font-weight:600;font-size:.88rem;background:var(--go);color:#fff;box-shadow:0 6px 18px color-mix(in srgb,var(--go) 32%,transparent)}
+.fab button.ghost{flex:none;width:52px;background:var(--surface);border:0;color:var(--ink);box-shadow:var(--shadow)}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+
+<div class="wrap">
+  <header class="top"><div class="top-in">
+    <div class="sky" aria-hidden="true"></div>
+    <div class="top-row">
+      <div class="date">
+        <b>พุธ 21 ต.ค.</b>
+        <span>ทำแล้ว <b class="num" id="hdDone">2</b>/<span class="num" id="hdAll">5</span> วันนี้ · สตรีครวม <b class="num">12</b> วัน</span>
+      </div>
+      <button class="iconbtn" id="btnBell" aria-label="ตัวอย่างการแจ้งเตือน">🔔<span class="dot"></span></button>
+      <button class="iconbtn" id="btnTheme" aria-label="สลับธีม">◐</button>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="today">วันนี้</button>
+      <button role="tab" aria-selected="false" data-tab="goals">เป้าหมาย</button>
+      <button role="tab" aria-selected="false" data-tab="stats">สรุป</button>
+      <button role="tab" aria-selected="false" data-tab="idea">แนวคิด</button>
+    </nav>
+  </div></header>
+
+  <!-- ===== TODAY ===== -->
+  <section id="p-today">
+    <div class="sec">
+      <div class="card" style="background:var(--go-soft);border-color:color-mix(in srgb,var(--go) 16%,transparent)">
+        <span class="when" style="color:var(--go)">ข้อความเปิดแอป</span>
+        <div style="font-size:.92rem;line-height:1.55">เหลืออีก <b>3 อย่าง</b> วันนี้ — รวมแล้วประมาณ <b>35 นาที</b><br><span class="muted tiny">เริ่มจาก “ยืดเส้น 10 นาที” ก่อนก็ได้ สั้นสุดในลิสต์</span></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><h2>โฟกัสวันนี้</h2><em>เรียงตามเวลาที่คุณมักทำสำเร็จ</em></div>
+      <div class="stack" id="todayList"></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><h2>ยังไม่ถึงคิว</h2><em>ซ่อนไว้ไม่ให้รก</em></div>
+      <div class="card tiny muted">อ่านหนังสือเล่มที่ 9 — เป้าเดือน พ.ย. · เว็บคลังเอกสาร หมุดถัดไปเริ่ม 26 ต.ค.</div>
+    </div>
+  </section>
+
+  <!-- ===== GOALS ===== -->
+  <section id="p-goals" hidden>
+    <div class="sec"><div class="sec-h"><h2>กำลังทำอยู่</h2><em class="num">5 เป้า</em></div>
+      <div class="stack" id="goalList"></div>
+    </div>
+    <div class="sec"><div class="sec-h"><h2>พักไว้ก่อน</h2></div>
+      <div class="card paused">
+        <div class="goal">
+          <div class="ring">⏸</div>
+          <div class="body"><h3>เรียนคอร์ส Apps Script</h3>
+            <div class="tiny muted">พักตั้งแต่ 2 ต.ค. · ไม่แจ้งเตือน ไม่นับสตรีค ตัวเลขเดิมรออยู่</div></div>
+        </div>
+        <div class="acts"><button>กลับมาทำต่อ</button><button>ลดเป้าแล้วค่อยเริ่ม</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== STATS ===== -->
+  <section id="p-stats" hidden>
+    <div class="sec">
+      <div class="card">
+        <span class="when">เดือนนี้ถึงวันนี้</span>
+        <div style="display:flex;align-items:flex-end;gap:10px">
+          <div class="big" style="color:var(--go)">78%</div>
+          <div class="tiny muted" style="padding-bottom:5px">ของสิ่งที่ตั้งใจไว้<br>เดือนที่แล้ว 71%</div>
+        </div>
+        <div class="heat" id="heat"></div>
+        <div class="dow"><span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span>ส</span><span>อา</span></div>
+        <div class="tiny muted" style="margin-top:8px">กรอบเส้นประ = วันลาที่ใช้ไป ไม่ใช่วันที่พลาด</div>
+      </div>
+    </div>
+    <div class="sec grid2">
+      <div class="card"><span class="when">วันที่ทำได้ดีสุด</span><div class="big">อังคาร</div><div class="tiny muted">สำเร็จ 92% — ลองย้ายงานหนักมาวันนี้</div></div>
+      <div class="card"><span class="when">ช่วงที่มักหลุด</span><div class="big">20:00</div><div class="tiny muted">หลังกลับจากวิ่งงาน — เลื่อนเตือนไป 21:30 ไหม</div></div>
+    </div>
+    <div class="sec"><div class="card">
+      <span class="when">ข้อสังเกตประจำสัปดาห์</span>
+      <div class="quote">สัปดาห์นี้คุณ<b>ไม่พลาดเลย 5 วันติด</b> ทั้งที่รับงานส่งของมากกว่าอาทิตย์ก่อน 2 วัน<br><span class="tiny muted">เป้าวิ่งสะสมเร็วกว่าแผน 4 กม. — ถ้าคงจังหวะนี้จะถึง 100 กม. ก่อนกำหนด 6 วัน</span></div>
+      <div class="acts"><button>ดันเป้าเป็น 110 กม.</button><button>คงไว้เท่าเดิม</button></div>
+    </div></div>
+    <div class="sec"><div class="card">
+      <span class="when">สิ่งที่ยังไม่ขยับ</span>
+      <div style="font-size:.88rem;line-height:1.6">“ลงสินค้าใหม่ 50 รายการ” นิ่งมา 9 วัน<div class="tiny muted" style="margin-top:4px">เป้าที่นิ่งเกิน 7 วันมักไม่ใช่เพราะขี้เกียจ แต่เพราะก้อนงานใหญ่ไป</div></div>
+      <div class="acts"><button>ซอยเป็น 5 รายการ/วัน</button><button>เลื่อนเดดไลน์</button><button>พักเป้านี้</button></div>
+    </div></div>
+  </section>
+
+  <!-- ===== IDEA ===== -->
+  <section id="p-idea" hidden>
+    <div class="sec"><div class="card pillar">
+      <span class="chip c-habit">1 · แจ้งเตือน</span>
+      <h3>เตือนให้ถูกจังหวะ ไม่ใช่เตือนให้ถี่</h3>
+      <ul>
+        <li><b>เรียนเวลาจากพฤติกรรม</b> — ดูว่าปกติกดเสร็จตอนกี่โมง แล้วเลื่อนเวลาเตือนตามเอง</li>
+        <li><b>รู้ว่าคุณไม่ว่าง</b> — ช่วงรับงานส่งของ/ชั่วโมงเงียบ เก็บไว้รวมส่งทีเดียว</li>
+        <li><b>บันไดการเตือน 4 ขั้น</b> แล้วหยุด ไม่ตื๊อข้ามวัน</li>
+        <li><b>น้ำเสียงเปลี่ยนตามสถานการณ์</b> — สตรีคยาวใช้เสียงชม พลาดวันแรกใช้เสียงปลอบ ไม่ใช้คำตำหนิเลย</li>
+      </ul>
+      <ol class="ladder">
+        <li><b>1</b><span>เตือนเบา ๆ ตามเวลาที่เรียนมา</span></li>
+        <li><b>2</b><span>ให้ข้อมูลแทนการเร่ง “เหลือ 9 วัน ต้องเฉลี่ย 4.1 กม./วัน”</span></li>
+        <li><b>3</b><span>เสนอทางออก “เอาครึ่งเดียวพอไหม” / “ใช้วันลา 1 วัน”</span></li>
+        <li><b>4</b><span>ปิดเงียบ แล้วไปสรุปรวมในรายงานวันอาทิตย์</span></li>
+      </ol>
+    </div></div>
+
+    <div class="sec"><div class="card pillar">
+      <span class="chip c-count">2 · โครงสร้างหน้าเดียว</span>
+      <h3>เปิดมาแล้วกดได้เลยใน 1 วินาที</h3>
+      <ul>
+        <li><b>หน้าแรกคือวันนี้</b> ไม่ใช่รายการเป้าทั้งหมด เป้าที่ยังไม่ถึงคิวถูกพับเก็บ</li>
+        <li><b>บันทึกจบในปุ่มเดียว</b> — ติ๊ก / +1 / เลื่อนแถบ ไม่ต้องเปิดหน้าใหม่</li>
+        <li><b>ทุกปุ่มอยู่ครึ่งล่างจอ</b> กดนิ้วโป้งข้างเดียวได้ตอนยืนรอของ</li>
+        <li><b>ไม่มีหน้า setting ซับซ้อน</b> — ปรับเป้าได้จากการ์ดนั้นเลย</li>
+      </ul>
+    </div></div>
+
+    <div class="sec"><div class="card pillar">
+      <span class="chip c-proj">3 · ความยืดหยุ่น</span>
+      <h3>ออกแบบให้ “พลาดได้” โดยไม่ล้มทั้งระบบ</h3>
+      <ul>
+        <li><b>วันลา 4 วัน/เดือน</b> ใช้แล้วสตรีคไม่ขาด เพราะชีวิตจริงมีวันที่ทำไม่ไหว</li>
+        <li><b>ความถี่แบบหลวม</b> — “3 ครั้ง/สัปดาห์” ไม่ต้องระบุว่าวันไหน</li>
+        <li><b>แก้เป้ากลางทางได้</b> ลด/เลื่อน/ซอยย่อย ถือเป็นการปรับแผน ไม่ใช่การล้มเหลว</li>
+        <li><b>ปุ่มพัก</b> หยุดเตือนโดยไม่ลบข้อมูล กลับมาต่อที่เดิมได้</li>
+        <li><b>ย้อนบันทึกได้</b> ลืมกดเมื่อวาน กดย้อนหลังได้ 2 วัน</li>
+      </ul>
+    </div></div>
+
+    <div class="sec"><div class="card pillar">
+      <span class="chip c-year">4 · สรุปผลสร้างแรงใจ</span>
+      <h3>บอกความหมาย ไม่ใช่แค่ตัวเลข</h3>
+      <ul>
+        <li><b>เทียบกับตัวเองเสมอ</b> — “ดีกว่าเดือนที่แล้ว 7%” ไม่เทียบกับใคร</li>
+        <li><b>หาแพตเทิร์นให้</b> — วันไหนทำได้ดี ช่วงไหนมักหลุด แล้วเสนอให้ย้ายเวลา</li>
+        <li><b>คาดการณ์ปลายทาง</b> — “จังหวะนี้จะถึงเป้าก่อนกำหนด 6 วัน” เห็นผลของวันนี้</li>
+        <li><b>อธิบายวันที่พลาด</b> ด้วยบริบท ไม่ใช่ด้วยสีแดง</li>
+      </ul>
+    </div></div>
+
+    <div class="sec"><div class="card pillar">
+      <span class="chip c-habit">สเปกเทคนิค</span>
+      <h3>ถ้าจะทำเป็นแอปติดตั้งจริง</h3>
+      <ul>
+        <li><b>PWA</b> — เว็บที่กด “เพิ่มไปยังหน้าโฮม” แล้วเปิดเต็มจอเหมือนแอป ไม่ต้องขึ้นสโตร์ อัปเดตเองทุกครั้งที่เปิด</li>
+        <li><b>แจ้งเตือน</b> — Web Push + Service Worker ทำงานแม้ปิดแอป (Android เสถียร / iOS ต้องติดตั้งลงหน้าโฮมก่อน)</li>
+        <li><b>ข้อมูล</b> — IndexedDB ในเครื่องเป็นหลัก ใช้งานออฟไลน์ได้ แล้วซิงก์ขึ้น Google Sheets หรือ Supabase ตอนมีเน็ต</li>
+        <li><b>ตัวเลือกสำรอง</b> — ถ้าอยากให้เตือนผ่าน LINE ด้วย ใช้ Apps Script ยิง LINE Messaging API ตามตารางเวลา</li>
+      </ul>
+    </div></div>
+  </section>
+</div>
+
+<div id="toast"></div>
+<div class="fab"><div class="fab-in">
+  <button id="btnAdd">+ ตั้งเป้าใหม่</button>
+  <button class="ghost" id="btnDemo" aria-label="จำลองการแจ้งเตือน">🔔</button>
+</div></div>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const ring=(p,c)=>`<svg width="42" height="42" viewBox="0 0 42 42" aria-hidden="true"><circle cx="21" cy="21" r="17" fill="none" stroke="var(--surface-2)" stroke-width="5"/><circle cx="21" cy="21" r="17" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${(106.8*p/100).toFixed(1)} 106.8" transform="rotate(-90 21 21)"/><text x="21" y="25" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink)" font-family="Bai Jamjuree,sans-serif">${Math.round(p)}</text></svg>`;
+const check='<svg viewBox="0 0 24 24" fill="none" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg>';
+
+const tasks=[
+ {id:'t1',type:'habit',chip:'นิสัยรายวัน',cls:'c-habit',title:'ยืดเส้น 10 นาทีก่อนนอน',meta:'สตรีค 12 วัน · ปกติทำ 22:10',done:false},
+ {id:'t2',type:'habit',chip:'หลวม 3 ครั้ง/สัปดาห์',cls:'c-habit',title:'ออกกำลังกาย',meta:'สัปดาห์นี้ 2/3 · เหลืออีก 1 ครั้งภายในอาทิตย์',done:true},
+ {id:'t3',type:'count',chip:'สะสม',cls:'c-count',title:'วิ่งสะสมให้ครบ 100 กม.',meta:'ถึง 31 ธ.ค.',done:false,val:63.5,target:100,unit:'กม.',step:.5,pace:'เร็วกว่าแผน 4.0 กม.'},
+ {id:'t4',type:'count',chip:'สะสม',cls:'c-count',title:'ลงสินค้าใหม่ 50 รายการ',meta:'นิ่งมา 9 วัน',done:false,val:32,target:50,unit:'รายการ',step:1,pace:'ช้ากว่าแผน 6 รายการ',warn:true},
+ {id:'t5',type:'proj',chip:'โปรเจกต์',cls:'c-proj',title:'เว็บคลังเอกสาร flipbook',meta:'เดดไลน์ 15 พ.ย. · เหลือ 25 วัน',done:false,
+   ms:[['ok','วางโครงหน้าเว็บ'],['ok','อัปโหลดไฟล์ PDF ได้'],['now','ทำตัวพลิกหน้าให้ลื่น'],['','ระบบค้นหาในเอกสาร'],['','ขึ้นเซิร์ฟเวอร์ใช้จริง']]}
+];
+const goals=[
+ {p:85,c:'var(--go)',chip:'นิสัยรายวัน',cls:'c-habit',t:'ยืดเส้น 10 นาทีก่อนนอน',s:'เดือนนี้ 17/20 วัน · สตรีค 12 · วันลาเหลือ 2'},
+ {p:67,c:'var(--go)',chip:'หลวม',cls:'c-habit',t:'ออกกำลังกาย 3 ครั้ง/สัปดาห์',s:'สัปดาห์นี้ 2/3 · 6 สัปดาห์ติดที่ทำครบ'},
+ {p:64,c:'var(--rest)',chip:'สะสม',cls:'c-count',t:'วิ่งสะสม 100 กม.',s:'63.5/100 กม. · เหลือ 71 วัน · เร็วกว่าแผน'},
+ {p:64,c:'var(--warn)',chip:'สะสม',cls:'c-count',t:'ลงสินค้าใหม่ 50 รายการ',s:'32/50 · นิ่งมา 9 วัน · ควรซอยงานให้เล็กลง'},
+ {p:40,c:'var(--warn)',chip:'โปรเจกต์',cls:'c-proj',t:'เว็บคลังเอกสาร flipbook',s:'2/5 หมุด · เดดไลน์ 15 พ.ย.'},
+ {p:67,c:'var(--go)',chip:'ทั้งปี',cls:'c-year',t:'อ่านหนังสือ 12 เล่มในปี 2026',s:'8/12 เล่ม · ซอยเป็นเดือนละ 1 เล่ม · ต.ค. ครบแล้ว'}
+];
+const notifs=[
+ {w:'07:30 · ทักทายตอนเช้า',t:'เมื่อวานทำครบ 3 อย่าง',b:'วันนี้มี 4 อย่าง รวมแล้วราว 50 นาที จะเริ่มอันไหนก่อนดี',k:''},
+ {w:'22:10 · เวลาที่เรียนจากพฤติกรรม',t:'ปกติคุณยืดเส้นตอนนี้',b:'10 นาที แล้วสตรีคจะเป็น 13 วัน',k:''},
+ {w:'พลาดวันแรก · น้ำเสียงปลอบ',t:'เมื่อวานข้ามไป ไม่เป็นไร',b:'สตรีคยังไม่ขาด เพราะใช้วันลาไป 1 วัน เหลืออีก 2 วันในเดือนนี้',k:'r'},
+ {w:'ใกล้เดดไลน์ · ให้ข้อมูลแทนการเร่ง',t:'วิ่งสะสม เหลือ 9 วัน',b:'ต้องเฉลี่ยวันละ 4.1 กม. เร็วกว่าที่ทำมา 0.6 กม./วัน',k:'w'},
+ {w:'เตือนขั้นที่ 3 · เสนอทางลด',t:'ลงสินค้ายังไม่ขยับมา 9 วัน',b:'เอาแค่ 5 รายการวันนี้พอไหม หรือจะเลื่อนเดดไลน์ไปอีก 1 สัปดาห์',k:'l'},
+ {w:'18:00–20:30 · ช่วงรับงานส่งของ',t:'เงียบไว้ก่อน',b:'เก็บ 2 การเตือนไว้ส่งรวมทีเดียวตอน 21:30',k:'r'},
+ {w:'อาทิตย์ 20:00 · สรุปสัปดาห์',t:'สัปดาห์นี้ไม่พลาดเลย 5 วันติด',b:'ทั้งที่รับงานมากกว่าอาทิตย์ก่อน 2 วัน — เก่งมาก',k:''}
+];
+
+function renderToday(){
+  $('#todayList').innerHTML=tasks.map(t=>{
+    let extra='';
+    if(t.type==='count'){
+      const pc=Math.min(100,t.val/t.target*100);
+      extra=`<div class="bar${t.warn?' w':''}"><i style="width:${pc}%"></i></div>
+        <div class="pace"><span class="num">${t.val} / ${t.target} ${t.unit}</span><span>${t.pace}</span></div>
+        <div class="stepper"><button data-dec="${t.id}" aria-label="ลด">−</button>
+        <input id="in-${t.id}" class="num" value="${t.val}" inputmode="decimal" aria-label="บันทึกค่า ${t.title}">
+        <button data-inc="${t.id}" aria-label="เพิ่ม">+</button><span class="unit">${t.unit} · วันนี้บวกเท่าไร</span></div>`;
+    }
+    if(t.type==='proj'){
+      extra=`<div class="ms">${t.ms.map(m=>`<div class="${m[0]}">${m[0]==='ok'?'●':m[0]==='now'?'◉':'○'} ${m[1]}</div>`).join('')}</div>`;
+    }
+    const acts=t.type==='count'
+      ? `<div class="acts"><button data-t="เลื่อนไปพรุ่งนี้แล้ว ไม่นับว่าพลาด">ข้ามวันนี้</button><button data-t="ซอยเป้าเป็นวันละ 5 รายการแล้ว">ซอยให้เล็กลง</button><button data-t="แก้เป้าหมายได้ตลอด ไม่ถือว่าล้มเหลว">แก้เป้า</button></div>`
+      : `<div class="acts"><button data-t="เลื่อนเตือนไปอีก 2 ชั่วโมง">เลื่อน 2 ชม.</button><button data-t="ใช้วันลา 1 วัน สตรีคไม่ขาด เหลือ 1 วันในเดือนนี้">ใช้วันลา</button><button data-t="พักเป้านี้แล้ว จะไม่เตือนจนกว่าจะกดกลับมาทำต่อ">พักไว้ก่อน</button></div>`;
+    return `<article class="card task-c ${t.done?'done':''}" data-id="${t.id}">
+      <div class="task">
+        <button class="tick" data-tick="${t.id}" aria-pressed="${t.done}" aria-label="บันทึกว่าทำแล้ว">${check}</button>
+        <div class="body"><span class="chip ${t.cls}">${t.chip}</span>
+          <h3 style="margin-top:6px">${t.title}</h3>
+          <div class="meta">${t.meta}</div>${extra}${acts}</div>
+      </div></article>`;
+  }).join('');
+  const d=tasks.filter(t=>t.done).length;
+  $('#hdDone').textContent=d; $('#hdAll').textContent=tasks.length;
+}
+function renderGoals(){
+  $('#goalList').innerHTML=goals.map(g=>`<article class="card"><div class="goal">
+    <div class="ring">${ring(g.p,g.c)}</div>
+    <div class="body"><span class="chip ${g.cls}">${g.chip}</span>
+      <h3 style="margin-top:5px">${g.t}</h3>
+      <div class="tiny muted" style="margin-top:3px">${g.s}</div></div>
+  </div></article>`).join('');
+}
+function renderHeat(){
+  const lv=[2,3,1,3,3,'r',0, 3,2,3,1,3,2,1, 3,3,'r',3,2,3,0, 1,3,3,2,3,3,2, 3,3,2,3,0,0,0];
+  $('#heat').innerHTML=lv.map(l=>`<i data-l="${l}"></i>`).join('');
+}
+function toast(title,body,k=''){
+  const el=document.createElement('div');
+  el.className='notif '+k;
+  el.innerHTML=`<div class="ico">ต</div><div><b>${title}</b><p>${body}</p></div>`;
+  $('#toast').append(el);
+  setTimeout(()=>{el.style.transition='.3s';el.style.opacity=0;el.style.transform='translateY(-10px)';setTimeout(()=>el.remove(),320)},4200);
+}
+let ni=0;
+function demo(){const n=notifs[ni++%notifs.length];toast(n.t,n.b+' <span style="opacity:.6">— '+n.w+'</span>',n.k);}
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-tick]');
+  if(t){const o=tasks.find(x=>x.id===t.dataset.tick);o.done=!o.done;renderToday();
+    if(o.done)toast('บันทึกแล้ว',o.type==='habit'?'สตรีคเป็น 13 วันแล้ว — ยาวสุดตั้งแต่เริ่มใช้':'เก็บเพิ่มแล้ว เหลืออีกนิดเดียว');return;}
+  const inc=e.target.closest('[data-inc]'),dec=e.target.closest('[data-dec]');
+  if(inc||dec){const id=(inc||dec).dataset.inc||(inc||dec).dataset.dec;const o=tasks.find(x=>x.id===id);
+    o.val=Math.max(0,+(o.val+(inc?o.step:-o.step)).toFixed(1));renderToday();return;}
+  const msg=e.target.closest('[data-t]'); if(msg){toast('ปรับให้แล้ว',msg.dataset.t,'r');return;}
+  const tab=e.target.closest('[data-tab]');
+  if(tab){$$('[data-tab]').forEach(b=>b.setAttribute('aria-selected',b===tab));
+    ['today','goals','stats','idea'].forEach(k=>$('#p-'+k).hidden=(k!==tab.dataset.tab));
+    window.scrollTo({top:0,behavior:'smooth'});return;}
+  if(e.target.closest('#btnBell')||e.target.closest('#btnDemo')){demo();return;}
+  if(e.target.closest('#btnAdd')){toast('ตั้งเป้าใหม่','เลือกชนิด: นิสัยรายวัน · สะสมตัวเลข · โปรเจกต์มีเดดไลน์ · เป้าทั้งปี แล้วแอปจะตั้งเวลาเตือนให้เองจากตารางที่ผ่านมา');return;}
+  if(e.target.closest('#btnTheme')){
+    const r=document.documentElement;
+    const dark=r.getAttribute('data-theme')==='dark'||(!r.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme:dark)').matches);
+    r.setAttribute('data-theme',dark?'light':'dark');return;}
+});
+renderToday();renderGoals();renderHeat();
+
+</script>
+
+<script>
+/* ---------- ติดตั้ง / ออฟไลน์ ---------- */
+if ('serviceWorker' in navigator) {
+  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+
+let deferredPrompt = null;
+addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e; showInstallBar();
+});
+addEventListener('appinstalled', () => { deferredPrompt = null; document.querySelector('#installBar')?.remove(); });
+
+const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+function showInstallBar(text) {
+  if (standalone || document.querySelector('#installBar')) return;
+  const bar = document.createElement('div');
+  bar.id = 'installBar';
+  bar.style.cssText = 'position:fixed;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(74px + env(safe-area-inset-bottom,0px));z-index:40;max-width:436px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;box-shadow:0 10px 30px rgba(40,67,58,.12);display:flex;gap:10px;align-items:center;font-family:var(--body)';
+  bar.innerHTML = '<div style="flex:1;min-width:0;font-size:.82rem;line-height:1.45">' +
+    (text || 'ติดตั้งลงหน้าโฮม เปิดได้เร็วกว่า และใช้ได้แม้ไม่มีเน็ต') + '</div>' +
+    (text ? '<button id="iClose" style="border:0;background:var(--surface-2);border-radius:99px;padding:7px 12px;font:inherit;font-size:.78rem">ปิด</button>'
+          : '<button id="iGo" style="border:0;background:var(--go);color:#fff;border-radius:99px;padding:8px 15px;font:inherit;font-size:.8rem;font-weight:600">ติดตั้ง</button>');
+  document.body.append(bar);
+  bar.querySelector('#iGo')?.addEventListener('click', async () => {
+    if (!deferredPrompt) return; deferredPrompt.prompt();
+    await deferredPrompt.userChoice; deferredPrompt = null; bar.remove();
+  });
+  bar.querySelector('#iClose')?.addEventListener('click', () => bar.remove());
+}
+if (isIOS && !standalone) {
+  setTimeout(() => showInstallBar('iPhone: กดปุ่ม “แชร์” ด้านล่าง แล้วเลือก “เพิ่มไปยังหน้าจอโฮม” เพื่อติดตั้งและเปิดการแจ้งเตือน'), 2500);
+}
+
+/* ---------- เก็บข้อมูลในเครื่อง ---------- */
+const KEY = 'paotidmue.v1';
+const today = () => new Date().toISOString().slice(0, 10);
+function save() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify({
+      day: today(),
+      tasks: tasks.map(t => ({ id: t.id, done: t.done, val: t.val }))
+    }));
+  } catch (_) {}
+}
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (!s) return;
+    const sameDay = s.day === today();
+    s.tasks.forEach(st => {
+      const t = tasks.find(x => x.id === st.id); if (!t) return;
+      if (st.val !== undefined) t.val = st.val;          // ค่าสะสมอยู่ข้ามวัน
+      if (sameDay) t.done = st.done; else t.done = false; // ติ๊กรายวันรีเซ็ตทุกวัน
+    });
+    renderToday();
+  } catch (_) {}
+}
+load();
+document.addEventListener('click', () => setTimeout(save, 0));
+addEventListener('visibilitychange', () => { if (document.hidden) save(); });
+
+/* ---------- แจ้งเตือนในเครื่อง ---------- */
+const REMINDERS = [
+  { at: '07:30', title: 'สรุปเช้านี้', body: 'มาดูกันว่าวันนี้มีอะไรบ้าง' },
+  { at: '18:30', title: 'ยังเหลืออยู่นะ', body: 'เปิดดูสักนิด เหลือไม่กี่อย่างเอง' },
+  { at: '22:10', title: 'ปกติคุณยืดเส้นตอนนี้', body: '10 นาที แล้วสตรีคจะต่อไปอีกวัน' }
+];
+const timers = [];
+function scheduleAll() {
+  timers.forEach(clearTimeout); timers.length = 0;
+  if (Notification.permission !== 'granted') return;
+  const now = new Date();
+  REMINDERS.forEach(r => {
+    const [h, m] = r.at.split(':').map(Number);
+    const when = new Date(now); when.setHours(h, m, 0, 0);
+    const ms = when - now;
+    if (ms > 0) timers.push(setTimeout(() => fire(r), ms));
+  });
+}
+async function fire(r) {
+  const left = tasks.filter(t => !t.done).length;
+  if (!left) return;                                   // ทำครบแล้วไม่ต้องกวน
+  const body = r.body + ' · เหลือ ' + left + ' อย่าง';
+  const reg = await navigator.serviceWorker?.ready.catch(() => null);
+  if (reg) reg.active?.postMessage({ type: 'notify', title: r.title, body, tag: r.at });
+  else new Notification(r.title, { body, icon: 'icon-192.png' });
+}
+async function askNotify() {
+  const p = await Notification.requestPermission();
+  if (p === 'granted') { scheduleAll(); toast('เปิดการแจ้งเตือนแล้ว', 'จะเตือนตามเวลาที่คุณมักทำสำเร็จ และเงียบเมื่อทำครบแล้ว'); }
+  else toast('ยังไม่ได้เปิด', 'เปิดได้ภายหลังที่การตั้งค่าของเบราว์เซอร์');
+}
+scheduleAll();
+addEventListener('focus', scheduleAll);
+
+/* ปุ่มกระดิ่งบนหัว = ขอสิทธิ์แจ้งเตือนถ้ายังไม่ได้เปิด */
+document.querySelector('#btnBell')?.addEventListener('click', e => {
+  if (Notification.permission === 'default') { e.stopImmediatePropagation(); askNotify(); }
+}, true);
+</script>
+</body>
+</html>
