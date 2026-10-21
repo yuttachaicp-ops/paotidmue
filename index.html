@@ -169,6 +169,12 @@ button{font:inherit;color:inherit;cursor:pointer}
 
 #toast{position:fixed;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 10px);z-index:60;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:460px;margin:0 auto}
 #toast .notif{box-shadow:0 10px 30px rgba(0,0,0,.14);background:var(--surface);animation:drop .32s cubic-bezier(.2,.9,.3,1)}
+#toast .notif.act{pointer-events:auto}
+#toast .undo{align-self:center;background:var(--go-soft);color:var(--go);border:0;border-radius:99px;padding:8px 15px;font-size:.78rem;font-weight:600;flex:none}
+.sheet-acts button.danger{background:var(--late-soft);color:var(--late);flex:none;width:72px}
+.sheet-acts button.danger.wide{flex:1;width:auto;background:var(--late);color:#fff}
+.sheet-acts button.mid{background:var(--surface-2);color:var(--ink-soft);flex:1;width:auto}
+.warnbox{background:var(--late-soft);border-radius:14px;padding:13px 14px;font-size:.84rem;line-height:1.6;margin:14px 0 4px}
 @keyframes drop{from{transform:translateY(-14px);opacity:0}}
 .fab{position:fixed;left:0;right:0;bottom:0;z-index:25;background:linear-gradient(to top,var(--meadow) 52%,transparent);
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
@@ -393,7 +399,7 @@ function renderToday(){
           ${g.type==='habit'?`<button class="tick" data-tick="${g.id}" aria-pressed="${done}" aria-label="บันทึกว่าทำแล้ว">${check}</button>`:''}
           <div class="body"><span class="chip ${t.cls}">${t.chip}</span>
             <h3 style="margin-top:6px">${esc(g.title)}</h3>${extra}
-            <div class="acts"><button data-pause="${g.id}">พักไว้ก่อน</button><button data-edit="${g.id}">แก้เป้า</button></div>
+            <div class="acts"><button data-pause="${g.id}">พักไว้ก่อน</button><button data-edit="${g.id}">แก้เป้า</button><button class="danger" data-del="${g.id}">ลบ</button></div>
           </div>
         </div></article>`;
     }).join('');
@@ -496,11 +502,13 @@ function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt
 function render(){renderToday();renderGoals();renderStats();syncBell();persist()}
 
 /* ---------- toast ---------- */
-function toast(title,body,k=''){
-  const el=document.createElement('div');el.className='notif '+k;
-  el.innerHTML=`<div class="ico">ต</div><div><b>${esc(title)}</b><p>${body}</p></div>`;
+function toast(title,body,k='',action){
+  const el=document.createElement('div');el.className='notif '+k+(action?' act':'');
+  el.innerHTML=`<div class="ico">ต</div><div style="flex:1;min-width:0"><b>${esc(title)}</b><p>${body}</p></div>`+
+    (action?`<button class="undo">${esc(action.label)}</button>`:'');
+  if(action)el.querySelector('.undo').addEventListener('click',()=>{action.fn();el.remove()});
   $('#toast').append(el);
-  setTimeout(()=>{el.style.transition='.3s';el.style.opacity=0;el.style.transform='translateY(-10px)';setTimeout(()=>el.remove(),320)},4000);
+  setTimeout(()=>{if(!el.isConnected)return;el.style.transition='.3s';el.style.opacity=0;el.style.transform='translateY(-10px)';setTimeout(()=>el.remove(),320)},action?8000:4000);
 }
 
 /* ---------- แผ่นเพิ่ม/แก้เป้า ---------- */
@@ -524,7 +532,7 @@ function openSheet(id){
     <div id="f-dyn"></div>
     <div class="field"><label for="f-note">บันทึกเพิ่มเติม (ไม่ใส่ก็ได้)</label>
       <textarea id="f-note" placeholder="ทำไปทำไม จะได้อ่านตอนหมดแรง">${esc(g.note||'')}</textarea></div>
-    <div class="sheet-acts"><button class="sec2" id="f-cancel">ยกเลิก</button><button id="f-save">${editing?'บันทึก':'เพิ่มเป้าหมาย'}</button></div>
+    <div class="sheet-acts"><button class="sec2" id="f-cancel">ยกเลิก</button>${editing?`<button class="danger" data-del="${editing.id}">ลบ</button>`:''}<button id="f-save">${editing?'บันทึก':'เพิ่มเป้าหมาย'}</button></div>
   </div>`;
   document.body.append(scrim);
   setType(pickType);
@@ -563,6 +571,45 @@ function setType(t){
   }
 }
 function closeSheet(){$('#scrim')?.remove();editing=null}
+
+/* ---------- ลบเป้าหมาย ---------- */
+let trash=null;
+function askDelete(id){
+  const g=S.goals.find(x=>x.id===id); if(!g)return;
+  closeSheet();
+  const days=Object.values(S.log).filter(d=>d[g.id]).length;
+  const sc=document.createElement('div');sc.className='scrim';sc.id='scrim';
+  sc.innerHTML=`<div class="sheet" role="dialog" aria-label="ยืนยันการลบ">
+    <h2>ลบเป้าหมายนี้?</h2>
+    <div class="warnbox"><b>${esc(g.title)}</b><br>
+      ${days?`มีประวัติที่บันทึกไว้ ${days} วัน จะถูกลบไปด้วย`:'ยังไม่มีประวัติที่บันทึกไว้'}</div>
+    <div class="tiny muted">ถ้าแค่อยากหยุดพักชั่วคราว ให้กด “พักไว้ก่อน” แทน ข้อมูลจะยังอยู่ครบ</div>
+    <div class="sheet-acts">
+      <button class="sec2" data-cf="no">ยกเลิก</button>
+      <button class="mid" data-cf="pause">พักแทน</button>
+      <button class="danger wide" data-cf="yes">ลบถาวร</button>
+    </div>
+  </div>`;
+  document.body.append(sc);
+  sc.dataset.id=id;
+}
+function doDelete(id){
+  const i=S.goals.findIndex(x=>x.id===id); if(i<0)return;
+  const g=S.goals[i];
+  const logs={};
+  Object.keys(S.log).forEach(k=>{if(S.log[k][g.id]!==undefined){logs[k]=S.log[k][g.id];delete S.log[k][g.id]}});
+  S.goals.splice(i,1);
+  trash={g,i,logs};
+  render();
+  toast('ลบแล้ว',esc(g.title),'l',{label:'เลิกทำ',fn:undoDelete});
+}
+function undoDelete(){
+  if(!trash)return;
+  S.goals.splice(Math.min(trash.i,S.goals.length),0,trash.g);
+  Object.keys(trash.logs).forEach(k=>{S.log[k]=S.log[k]||{};S.log[k][trash.g.id]=trash.logs[k]});
+  const name=trash.g.title;trash=null;render();
+  toast('กู้คืนแล้ว',esc(name)+' กลับมาพร้อมประวัติเดิม');
+}
 function saveSheet(){
   const title=$('#f-title').value.trim();
   if(!title){toast('ยังไม่ได้ตั้งชื่อ','ใส่ชื่อเป้าหมายก่อนนะ','l');$('#f-title').focus();return}
@@ -623,11 +670,13 @@ document.addEventListener('click',e=>{
   const ed=t.closest('[data-edit]'); if(ed){openSheet(ed.dataset.edit);return}
 
   const del=t.closest('[data-del]');
-  if(del){const g=S.goals.find(x=>x.id===del.dataset.del);
-    if(del.dataset.sure){S.goals=S.goals.filter(x=>x.id!==g.id);
-      Object.values(S.log).forEach(d=>delete d[g.id]);render();toast('ลบแล้ว',esc(g.title));return}
-    del.dataset.sure='1';del.textContent='กดอีกครั้งเพื่อลบ';del.style.color='var(--late)';
-    setTimeout(()=>{if(del.isConnected){del.dataset.sure='';del.textContent='ลบ';del.style.color=''}},3500);
+  if(del){askDelete(del.dataset.del);return}
+
+  const cf=t.closest('[data-cf]');
+  if(cf){const id=$('#scrim')?.dataset.id;const a=cf.dataset.cf;closeSheet();
+    if(a==='yes')doDelete(id);
+    else if(a==='pause'){const g=S.goals.find(x=>x.id===id);if(g){g.paused=true;render();
+      toast('พักเป้านี้แล้ว','ไม่ลบข้อมูล กดกลับมาทำต่อได้ที่แท็บเป้าหมาย','r')}}
     return}
 
   const tab=t.closest('[data-tab]');
@@ -669,7 +718,7 @@ render();
 
 <script>
 /* ---------- เวอร์ชัน / อัปเดตอัตโนมัติ ---------- */
-const APP_VERSION = '1.4.0';
+const APP_VERSION = '1.5.0';
 
 if ('serviceWorker' in navigator) {
   addEventListener('load', async () => {
